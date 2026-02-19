@@ -1,0 +1,1746 @@
+use client";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  AlertCircle,
+  ShoppingCart,
+  Home,
+  Car,
+  Utensils,
+  Heart,
+  Smartphone,
+  Plane,
+  Coffee,
+  Plus,
+  Pencil,
+  Trash2,
+  LayoutDashboard,
+  Settings,
+  Receipt,
+  Bell,
+  Calendar,
+  Gift,
+  Award,
+  Star,
+  Clock,
+  Edit,
+  RefreshCw,
+} from "lucide-react";
+
+// ==============================================
+// TYPES
+// ==============================================
+
+interface Bill {
+  id: string;
+  name: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  frequency: 'one-time' | 'monthly' | 'quarterly' | 'yearly';
+  category: string;
+  status: 'pending' | 'paid' | 'overdue';
+  reminderDays: number;
+}
+
+interface Reward {
+  id: string;
+  name: string;
+  description: string;
+  pointsRequired: number;
+  category: string;
+  available: boolean;
+}
+
+interface RewardTransaction {
+  id: string;
+  date: string;
+  description: string;
+  points: number;
+  type: 'earned' | 'redeemed';
+}
+
+// ==============================================
+// MAIN APP COMPONENT - INTEGRATED DASHBOARD
+// ==============================================
+
+export default function App() {
+  // ----- MILESTONE 2: BANKING STATE -----
+  const [transactions, setTransactions] = useState([
+    {
+      id: "1",
+      description: "Reliance Fresh",
+      amount: 2850.45,
+      category: "Groceries",
+      date: "2026-01-18",
+      type: "debit",
+    },
+    {
+      id: "2",
+      description: "Salary Deposit",
+      amount: 85000.0,
+      category: "Other",
+      date: "2026-01-15",
+      type: "credit",
+    },
+    {
+      id: "3",
+      description: "HP Petrol Pump",
+      amount: 3500.0,
+      category: "Transportation",
+      date: "2026-01-17",
+      type: "debit",
+    },
+    {
+      id: "4",
+      description: "Netflix Subscription",
+      amount: 649.0,
+      category: "Entertainment",
+      date: "2026-01-16",
+      type: "debit",
+    },
+    {
+      id: "5",
+      description: "Domino's Pizza",
+      amount: 850.0,
+      category: "Dining Out",
+      date: "2026-01-19",
+      type: "debit",
+    },
+    {
+      id: "6",
+      description: "Rent Payment",
+      amount: 25000.0,
+      category: "Housing",
+      date: "2026-01-01",
+      type: "debit",
+    },
+    {
+      id: "7",
+      description: "Apollo Pharmacy",
+      amount: 1250.67,
+      category: "Healthcare",
+      date: "2026-01-14",
+      type: "debit",
+    },
+    {
+      id: "8",
+      description: "Starbucks",
+      amount: 450.0,
+      category: "Dining Out",
+      date: "2026-01-20",
+      type: "debit",
+    },
+    {
+      id: "9",
+      description: "Amazon Purchase",
+      amount: 4599.99,
+      category: "Other",
+      date: "2026-01-13",
+      type: "debit",
+    },
+    {
+      id: "10",
+      description: "Uber Ride",
+      amount: 285.0,
+      category: "Transportation",
+      date: "2026-01-19",
+      type: "debit",
+    },
+  ]);
+
+  const [budgets, setBudgets] = useState([
+    { id: "1", category: "Groceries", amount: 12000 },
+    { id: "2", category: "Housing", amount: 25000 },
+    { id: "3", category: "Transportation", amount: 8000 },
+    { id: "4", category: "Dining Out", amount: 5000 },
+    { id: "5", category: "Entertainment", amount: 3000 },
+  ]);
+
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [newCategory, setNewCategory] = useState("");
+  const [newAmount, setNewAmount] = useState("");
+
+  // ----- MILESTONE 3: BILLS STATE -----
+  const [bills, setBills] = useState<Bill[]>([
+    {
+      id: '1',
+      name: 'Electric Bill',
+      amount: 2500.50,
+      currency: 'INR',
+      dueDate: '2026-02-10',
+      frequency: 'monthly',
+      category: 'utilities',
+      status: 'pending',
+      reminderDays: 3,
+    },
+    {
+      id: '2',
+      name: 'Internet Service',
+      amount: 999.0,
+      currency: 'INR',
+      dueDate: '2026-02-15',
+      frequency: 'monthly',
+      category: 'utilities',
+      status: 'pending',
+      reminderDays: 5,
+    },
+    {
+      id: '3',
+      name: 'Rent',
+      amount: 25000.00,
+      currency: 'INR',
+      dueDate: '2026-03-01',
+      frequency: 'monthly',
+      category: 'rent',
+      status: 'pending',
+      reminderDays: 7,
+    },
+    {
+      id: '4',
+      name: 'Car Insurance',
+      amount: 15000.00,
+      currency: 'INR',
+      dueDate: '2026-02-05',
+      frequency: 'quarterly',
+      category: 'insurance',
+      status: 'pending',
+      reminderDays: 5,
+    },
+  ]);
+
+  const [billFormData, setBillFormData] = useState({
+    name: '',
+    amount: '',
+    currency: 'INR',
+    dueDate: '',
+    frequency: 'monthly' as Bill['frequency'],
+    category: 'utilities',
+    reminderDays: '3',
+  });
+
+  const [isBillDialogOpen, setIsBillDialogOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<Bill | null>(null);
+
+  // ----- MILESTONE 3: REWARDS STATE -----
+  const [pointsBalance, setPointsBalance] = useState(1250);
+  const [rewards] = useState<Reward[]>([
+    {
+      id: '1',
+      name: '₹500 Gift Card',
+      description: 'Redeem for a ₹500 Amazon gift card',
+      pointsRequired: 500,
+      category: 'gift-cards',
+      available: true,
+    },
+    {
+      id: '2',
+      name: '₹1000 Gift Card',
+      description: 'Redeem for a ₹1000 Flipkart gift card',
+      pointsRequired: 1000,
+      category: 'gift-cards',
+      available: true,
+    },
+    {
+      id: '3',
+      name: '₹2000 Statement Credit',
+      description: 'Apply ₹2000 credit to your next bill',
+      pointsRequired: 2000,
+      category: 'bill-credit',
+      available: true,
+    },
+    {
+      id: '4',
+      name: 'Premium Features (1 month)',
+      description: 'Unlock premium features for 1 month',
+      pointsRequired: 750,
+      category: 'subscription',
+      available: true,
+    },
+  ]);
+
+  const [rewardTransactions, setRewardTransactions] = useState<RewardTransaction[]>([
+    {
+      id: '1',
+      date: '2026-02-01',
+      description: 'Paid electric bill on time',
+      points: 100,
+      type: 'earned',
+    },
+    {
+      id: '2',
+      date: '2026-01-28',
+      description: 'Paid all bills for January',
+      points: 250,
+      type: 'earned',
+    },
+  ]);
+
+  const [isAddPointsDialogOpen, setIsAddPointsDialogOpen] = useState(false);
+  const [pointsToAdd, setPointsToAdd] = useState('');
+  const [pointsDescription, setPointsDescription] = useState('');
+
+  // ----- MILESTONE 3: CURRENCY STATE -----
+  const [baseCurrency, setBaseCurrency] = useState('INR');
+  const [exchangeRates, setExchangeRates] = useState<Record<string, any>>({
+    INR: { currency: 'INR', rate: 1.0, change24h: 0, symbol: '₹' },
+    USD: { currency: 'USD', rate: 0.012, change24h: 0.1, symbol: '$' },
+    EUR: { currency: 'EUR', rate: 0.011, change24h: -0.2, symbol: '€' },
+    GBP: { currency: 'GBP', rate: 0.0095, change24h: 0.3, symbol: '£' },
+    JPY: { currency: 'JPY', rate: 1.80, change24h: 0.5, symbol: '¥' },
+    CAD: { currency: 'CAD', rate: 0.016, change24h: -0.1, symbol: 'C$' },
+    AUD: { currency: 'AUD', rate: 0.018, change24h: 0.2, symbol: 'A$' },
+    SGD: { currency: 'SGD', rate: 0.016, change24h: 0.1, symbol: 'S$' },
+    AED: { currency: 'AED', rate: 0.044, change24h: 0.0, symbol: 'د.إ' },
+  });
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
+
+  // ----- CALCULATE STATISTICS -----
+  const stats = {
+    balance: 125678.50,
+    income: transactions
+      .filter((t) => t.type === "credit")
+      .reduce((sum, t) => sum + t.amount, 0),
+    expenses: transactions
+      .filter((t) => t.type === "debit")
+      .reduce((sum, t) => sum + t.amount, 0),
+    savings: 45234.67,
+  };
+
+  // ----- MILESTONE 2: BUDGET HANDLERS -----
+  const categorySpending = transactions
+    .filter((t) => t.type === "debit")
+    .reduce((acc, transaction) => {
+      const existing = acc.find(
+        (item) => item.category === transaction.category,
+      );
+      if (existing) {
+        existing.spent += transaction.amount;
+      } else {
+        const budget = budgets.find((b) => b.category === transaction.category);
+        acc.push({
+          category: transaction.category,
+          spent: transaction.amount,
+          budget: budget?.amount || 0,
+          color: getCategoryColor(transaction.category),
+        });
+      }
+      return acc;
+    }, []);
+
+  budgets.forEach((budget) => {
+    if (!categorySpending.find((item) => item.category === budget.category)) {
+      categorySpending.push({
+        category: budget.category,
+        spent: 0,
+        budget: budget.amount,
+        color: getCategoryColor(budget.category),
+      });
+    }
+  });
+
+  const trendData = [
+    { month: "Aug", spending: 45000, budget: 48000 },
+    { month: "Sep", spending: 52000, budget: 48000 },
+    { month: "Oct", spending: 42000, budget: 48000 },
+    { month: "Nov", spending: 49000, budget: 48000 },
+    { month: "Dec", spending: 51000, budget: 48000 },
+    { month: "Jan", spending: 39434.11, budget: 53000 },
+  ];
+
+  const handleAddBudget = (e) => {
+    e.preventDefault();
+    if (!newCategory || !newAmount) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const budgetData = {
+      id: Date.now().toString(),
+      category: newCategory,
+      amount: parseFloat(newAmount),
+    };
+
+    if (editingBudget) {
+      setBudgets(
+        budgets.map((b) => (b.id === editingBudget.id ? budgetData : b)),
+      );
+      toast.success("Budget updated successfully");
+    } else {
+      setBudgets([...budgets, budgetData]);
+      toast.success("Budget added successfully");
+    }
+
+    setIsDialogOpen(false);
+    setNewCategory("");
+    setNewAmount("");
+    setEditingBudget(null);
+  };
+
+  const handleEditBudget = (budget) => {
+    setEditingBudget(budget);
+    setNewCategory(budget.category);
+    setNewAmount(budget.amount.toString());
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteBudget = (id) => {
+    setBudgets(budgets.filter((b) => b.id !== id));
+    toast.success("Budget deleted successfully");
+  };
+
+  // ----- MILESTONE 3: BILLS HANDLERS -----
+  const resetBillForm = () => {
+    setBillFormData({
+      name: '',
+      amount: '',
+      currency: 'INR',
+      dueDate: '',
+      frequency: 'monthly',
+      category: 'utilities',
+      reminderDays: '3',
+    });
+  };
+
+  const handleAddBill = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!billFormData.name || !billFormData.amount || !billFormData.dueDate) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const billData: Bill = {
+      id: Date.now().toString(),
+      name: billFormData.name,
+      amount: parseFloat(billFormData.amount),
+      currency: billFormData.currency,
+      dueDate: billFormData.dueDate,
+      frequency: billFormData.frequency,
+      category: billFormData.category,
+      status: 'pending',
+      reminderDays: parseInt(billFormData.reminderDays),
+    };
+
+    if (editingBill) {
+      setBills(bills.map(bill => bill.id === editingBill.id ? { ...billData, id: editingBill.id } : bill));
+      toast.success('Bill updated successfully');
+      setEditingBill(null);
+    } else {
+      setBills([...bills, billData]);
+      toast.success('Bill added successfully');
+    }
+    
+    setIsBillDialogOpen(false);
+    resetBillForm();
+  };
+
+  const handleEditBill = (bill: Bill) => {
+    setEditingBill(bill);
+    setBillFormData({
+      name: bill.name,
+      amount: bill.amount.toString(),
+      currency: bill.currency,
+      dueDate: bill.dueDate,
+      frequency: bill.frequency,
+      category: bill.category,
+      reminderDays: bill.reminderDays.toString(),
+    });
+    setIsBillDialogOpen(true);
+  };
+
+  const handleDeleteBill = (id: string) => {
+    setBills(bills.filter(bill => bill.id !== id));
+    toast.success('Bill deleted successfully');
+  };
+
+  const handleMarkAsPaid = (id: string) => {
+    setBills(bills.map(bill => {
+      if (bill.id === id) {
+        const daysUntilDue = getDaysUntilDue(bill.dueDate);
+        const pointsEarned = daysUntilDue >= 0 ? 100 : 50;
+        
+        handleAddRewardPoints(pointsEarned, `Paid ${bill.name}`);
+        
+        return { ...bill, status: 'paid' as Bill['status'] };
+      }
+      return bill;
+    }));
+  };
+
+  const getDaysUntilDue = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const getUpcomingBills = () => {
+    return bills.filter((bill) => {
+      if (bill.status === 'paid') return false;
+      const daysUntil = getDaysUntilDue(bill.dueDate);
+      return daysUntil <= bill.reminderDays && daysUntil >= -7;
+    }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  };
+
+  // ----- MILESTONE 3: REWARDS HANDLERS -----
+  const handleAddRewardPoints = (points: number, description: string) => {
+    setPointsBalance(pointsBalance + points);
+    const newTransaction: RewardTransaction = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      description,
+      points,
+      type: 'earned',
+    };
+    setRewardTransactions([newTransaction, ...rewardTransactions]);
+  };
+
+  const handleAddPointsManual = () => {
+    const points = parseInt(pointsToAdd);
+    if (!points || points <= 0) {
+      toast.error('Please enter a valid number of points');
+      return;
+    }
+    if (!pointsDescription) {
+      toast.error('Please enter a description');
+      return;
+    }
+
+    handleAddRewardPoints(points, pointsDescription);
+    toast.success(`Added ${points} points!`);
+    setPointsToAdd('');
+    setPointsDescription('');
+    setIsAddPointsDialogOpen(false);
+  };
+
+  const handleRedeemReward = (rewardId: string) => {
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) return;
+
+    if (pointsBalance < reward.pointsRequired) {
+      toast.error('Not enough points to redeem this reward');
+      return;
+    }
+
+    setPointsBalance(pointsBalance - reward.pointsRequired);
+    const newTransaction: RewardTransaction = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      description: `Redeemed: ${reward.name}`,
+      points: reward.pointsRequired,
+      type: 'redeemed',
+    };
+    setRewardTransactions([newTransaction, ...rewardTransactions]);
+    toast.success(`Redeemed: ${reward.name}`);
+  };
+
+  const getTier = (points: number) => {
+    if (points >= 5000) return { name: 'Diamond', color: 'text-purple-600', nextTier: null, progress: 100 };
+    if (points >= 2500) return { name: 'Gold', color: 'text-yellow-600', nextTier: 5000, progress: ((points - 2500) / 2500) * 100 };
+    if (points >= 1000) return { name: 'Silver', color: 'text-gray-500', nextTier: 2500, progress: ((points - 1000) / 1500) * 100 };
+    return { name: 'Bronze', color: 'text-orange-700', nextTier: 1000, progress: (points / 1000) * 100 };
+  };
+
+  // ----- MILESTONE 3: CURRENCY HANDLERS -----
+  const fetchExchangeRates = async () => {
+    setIsLoadingRates(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Mock exchange rates relative to INR
+    const mockRates: Record<string, any> = {
+      INR: { currency: 'INR', rate: 1.0, change24h: 0, symbol: '₹' },
+      USD: { currency: 'USD', rate: 0.012, change24h: Math.random() * 0.5 - 0.25, symbol: '$' },
+      EUR: { currency: 'EUR', rate: 0.011, change24h: Math.random() * 0.5 - 0.25, symbol: '€' },
+      GBP: { currency: 'GBP', rate: 0.0095, change24h: Math.random() * 0.5 - 0.25, symbol: '£' },
+      JPY: { currency: 'JPY', rate: 1.80, change24h: Math.random() * 0.5 - 0.25, symbol: '¥' },
+      CAD: { currency: 'CAD', rate: 0.016, change24h: Math.random() * 0.5 - 0.25, symbol: 'C$' },
+      AUD: { currency: 'AUD', rate: 0.018, change24h: Math.random() * 0.5 - 0.25, symbol: 'A$' },
+      SGD: { currency: 'SGD', rate: 0.016, change24h: Math.random() * 0.5 - 0.25, symbol: 'S$' },
+      AED: { currency: 'AED', rate: 0.044, change24h: Math.random() * 0.5 - 0.25, symbol: 'د.إ' },
+    };
+
+    const baseRate = mockRates[baseCurrency]?.rate || 1;
+    const convertedRates: Record<string, any> = {};
+    
+    Object.entries(mockRates).forEach(([currency, data]: [string, any]) => {
+      convertedRates[currency] = {
+        ...data,
+        rate: data.rate / baseRate,
+      };
+    });
+
+    setExchangeRates(convertedRates);
+    setIsLoadingRates(false);
+    toast.success('Exchange rates updated');
+  };
+
+  const getCurrencySymbol = (currency: string) => {
+    return exchangeRates[currency]?.symbol || currency;
+  };
+
+  const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string) => {
+    if (fromCurrency === toCurrency) return amount;
+    
+    const fromRate = exchangeRates[fromCurrency]?.rate || 1;
+    const toRate = exchangeRates[toCurrency]?.rate || 1;
+    
+    // Convert to base currency first, then to target currency
+    const baseAmount = amount / fromRate;
+    return baseAmount * toRate;
+  };
+
+  const billsByCurrency = bills.reduce((acc, bill) => {
+    acc[bill.currency] = (acc[bill.currency] || 0) + bill.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const calculateCurrencySummary = () => {
+    let totalAmount = 0;
+    const breakdown: any[] = [];
+
+    Object.entries(billsByCurrency).forEach(([currency, amount]) => {
+      const convertedAmount = convertCurrency(amount, currency, baseCurrency);
+      totalAmount += convertedAmount;
+      
+      breakdown.push({
+        currency,
+        amount,
+        convertedAmount,
+      });
+    });
+
+    return {
+      baseCurrency,
+      totalAmount,
+      breakdown: breakdown.sort((a, b) => b.convertedAmount - a.convertedAmount),
+    };
+  };
+
+  // ----- FILTER TRANSACTIONS -----
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesCategory =
+      filterCategory === "all" || transaction.category === filterCategory;
+    const matchesSearch = transaction.description
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const categories = Array.from(
+    new Set(transactions.map((t) => t.category)),
+  ).sort();
+
+  const categoryIcons = {
+    Groceries: ShoppingCart,
+    Housing: Home,
+    Transportation: Car,
+    "Dining Out": Utensils,
+    Healthcare: Heart,
+    Entertainment: Smartphone,
+    Travel: Plane,
+    Other: Coffee,
+  };
+
+  const CATEGORIES = [
+    "Groceries",
+    "Housing",
+    "Transportation",
+    "Dining Out",
+    "Healthcare",
+    "Entertainment",
+    "Travel",
+    "Other",
+  ];
+
+  const BILL_CATEGORIES = ["utilities", "rent", "insurance", "subscriptions", "other"];
+  const CURRENCIES = ["INR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "SGD", "AED"];
+
+  const tier = getTier(pointsBalance);
+  const upcomingBills = getUpcomingBills();
+  const currencySummary = calculateCurrencySummary();
+
+  // ----- RENDER DASHBOARD -----
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        {/* HEADER */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Digital Banking Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your finances, bills, and rewards all in one place
+          </p>
+        </div>
+
+        {/* ACCOUNT SUMMARY CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Current Balance
+              </CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Wallet className="h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{stats.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Reward Points
+              </CardTitle>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Star className="h-4 w-4 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {pointsBalance.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {tier.name} Tier
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Upcoming Bills
+              </CardTitle>
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Bell className="h-4 w-4 text-orange-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {upcomingBills.length}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Due within {upcomingBills[0]?.reminderDays || 7} days
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Expenses
+              </CardTitle>
+              <div className="p-2 bg-red-100 rounded-lg">
+                <TrendingDown className="h-4 w-4 text-red-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₹{stats.expenses.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Net: {stats.income - stats.expenses >= 0 ? "+" : "-"}₹
+                {Math.abs(stats.income - stats.expenses).toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* MAIN CONTENT TABS */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+            <TabsTrigger value="overview">
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="bills">
+              <Receipt className="w-4 h-4 mr-2" />
+              Bills
+            </TabsTrigger>
+            <TabsTrigger value="rewards">
+              <Gift className="w-4 h-4 mr-2" />
+              Rewards
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="manage">
+              <Settings className="w-4 h-4 mr-2" />
+              Manage
+            </TabsTrigger>
+          </TabsList>
+
+          {/* OVERVIEW TAB */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Bill Reminders */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="size-5" />
+                      Bill Reminders
+                    </CardTitle>
+                    <CardDescription>Upcoming and overdue bills</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {upcomingBills.filter(b => getDaysUntilDue(b.dueDate) < 0).length > 0 && (
+                      <Badge variant="destructive">
+                        {upcomingBills.filter(b => getDaysUntilDue(b.dueDate) < 0).length} Overdue
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {upcomingBills.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Bell className="size-12 mx-auto mb-2 opacity-50" />
+                    <p>No upcoming bills to remind you about</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {upcomingBills.map((bill) => {
+                      const daysUntil = getDaysUntilDue(bill.dueDate);
+                      const isOverdue = daysUntil < 0;
+                      const isDueToday = daysUntil === 0;
+                      
+                      return (
+                        <div
+                          key={bill.id}
+                          className={`p-4 rounded-lg border ${
+                            isOverdue ? 'bg-red-50 border-red-200' : isDueToday ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-medium">{bill.name}</h4>
+                                {isOverdue && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
+                                {isDueToday && <Badge variant="default" className="text-xs">Due Today</Badge>}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <DollarSign className="size-3" />
+                                  {getCurrencySymbol(bill.currency)}{bill.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="size-3" />
+                                  {new Date(bill.dueDate).toLocaleDateString('en-IN')}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="size-3" />
+                                  {isOverdue ? `${Math.abs(daysUntil)} days overdue` : isDueToday ? 'Due today' : `${daysUntil} days remaining`}
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={isOverdue ? "default" : "secondary"}
+                              onClick={() => handleMarkAsPaid(bill.id)}
+                            >
+                              Mark as Paid
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* BUDGET OVERVIEW */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">
+                        Total Budget
+                      </span>
+                      <span className="font-semibold">
+                        ₹{categorySpending.reduce((sum, item) => sum + item.spent, 0).toFixed(2)} / ₹
+                        {categorySpending.reduce((sum, item) => sum + item.budget, 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <Progress
+                      value={(categorySpending.reduce((sum, item) => sum + item.spent, 0) / categorySpending.reduce((sum, item) => sum + item.budget, 0)) * 100}
+                      className="h-3"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    {categorySpending.slice(0, 5).map((item) => {
+                      const percentage = (item.spent / item.budget) * 100;
+                      const isOverBudget = percentage > 100;
+
+                      return (
+                        <div key={item.category} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                              <span className="text-sm font-medium">{item.category}</span>
+                              {isOverBudget && <AlertCircle className="w-4 h-4 text-red-500" />}
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              ₹{item.spent.toFixed(2)} / ₹{item.budget.toFixed(2)}
+                            </span>
+                          </div>
+                          <Progress value={Math.min(percentage, 100)} className="h-2" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* SPENDING PIE CHART */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Spending by Category</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categorySpending}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="spent"
+                        label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categorySpending.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* RECENT TRANSACTIONS */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {transactions.slice(0, 5).map((transaction) => {
+                      const Icon = categoryIcons[transaction.category] || categoryIcons.Other;
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{transaction.description}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs">{transaction.category}</Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(transaction.date).toLocaleDateString('en-IN')}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-semibold ${transaction.type === "credit" ? "text-green-600" : "text-red-600"}`}>
+                              {transaction.type === "credit" ? "+" : "-"}₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* BILLS TAB */}
+          <TabsContent value="bills" className="space-y-6">
+            {/* Bills Manager */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Bills Management</CardTitle>
+                    <CardDescription>Track and manage your recurring bills</CardDescription>
+                  </div>
+                  <Dialog open={isBillDialogOpen} onOpenChange={(open) => {
+                    setIsBillDialogOpen(open);
+                    if (!open) {
+                      resetBillForm();
+                      setEditingBill(null);
+                    }
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="mr-2 size-4" />
+                        Add Bill
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{editingBill ? 'Edit Bill' : 'Add New Bill'}</DialogTitle>
+                        <DialogDescription>Enter the details of your bill</DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleAddBill}>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="bill-name">Bill Name *</Label>
+                            <Input
+                              id="bill-name"
+                              value={billFormData.name}
+                              onChange={(e) => setBillFormData({ ...billFormData, name: e.target.value })}
+                              placeholder="Electric Bill"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-amount">Amount *</Label>
+                              <Input
+                                id="bill-amount"
+                                type="number"
+                                step="0.01"
+                                value={billFormData.amount}
+                                onChange={(e) => setBillFormData({ ...billFormData, amount: e.target.value })}
+                                placeholder="1000.00"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-currency">Currency</Label>
+                              <Select value={billFormData.currency} onValueChange={(value) => setBillFormData({ ...billFormData, currency: value })}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {CURRENCIES.map(curr => (
+                                    <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="bill-dueDate">Due Date *</Label>
+                            <Input
+                              id="bill-dueDate"
+                              type="date"
+                              value={billFormData.dueDate}
+                              onChange={(e) => setBillFormData({ ...billFormData, dueDate: e.target.value })}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-frequency">Frequency</Label>
+                              <Select value={billFormData.frequency} onValueChange={(value) => setBillFormData({ ...billFormData, frequency: value as Bill['frequency'] })}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="one-time">One-time</SelectItem>
+                                  <SelectItem value="monthly">Monthly</SelectItem>
+                                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                                  <SelectItem value="yearly">Yearly</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-category">Category</Label>
+                              <Select value={billFormData.category} onValueChange={(value) => setBillFormData({ ...billFormData, category: value })}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {BILL_CATEGORIES.map(cat => (
+                                    <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="bill-reminder">Reminder (days before)</Label>
+                            <Input
+                              id="bill-reminder"
+                              type="number"
+                              value={billFormData.reminderDays}
+                              onChange={(e) => setBillFormData({ ...billFormData, reminderDays: e.target.value })}
+                              placeholder="3"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit">{editingBill ? 'Update Bill' : 'Add Bill'}</Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bills.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No bills added yet. Click "Add Bill" to get started.
+                    </div>
+                  ) : (
+                    bills.map((bill) => {
+                      const daysUntil = getDaysUntilDue(bill.dueDate);
+                      const isUpcoming = daysUntil <= bill.reminderDays && daysUntil >= 0;
+                      
+                      return (
+                        <div key={bill.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-4">
+                            <div className={`size-3 rounded-full ${bill.status === 'paid' ? 'bg-green-500' : bill.status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">{bill.name}</h4>
+                                <Badge variant="outline" className="capitalize">{bill.frequency}</Badge>
+                                {isUpcoming && (
+                                  <Badge variant="destructive" className="gap-1">
+                                    <AlertCircle className="size-3" />
+                                    Due Soon
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <DollarSign className="size-3" />
+                                  {getCurrencySymbol(bill.currency)}{bill.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="size-3" />
+                                  Due: {new Date(bill.dueDate).toLocaleDateString('en-IN')}
+                                </span>
+                                <span className="capitalize">{bill.category}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditBill(bill)}>
+                              <Edit className="size-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteBill(bill.id)}>
+                              <Trash2 className="size-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Currency Summary */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="size-5" />
+                      Currency Summary
+                    </CardTitle>
+                    <CardDescription>Exchange rates and total bills converted to base currency</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={baseCurrency} onValueChange={setBaseCurrency}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map((currency) => (
+                          <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" onClick={fetchExchangeRates} disabled={isLoadingRates}>
+                      <RefreshCw className={`size-4 ${isLoadingRates ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Total Bills Value</p>
+                    <p className="text-3xl font-bold">
+                      {getCurrencySymbol(baseCurrency)}{currencySummary.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  {currencySummary.breakdown.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">Breakdown by Currency</h4>
+                      {currencySummary.breakdown.map(({ currency, amount, convertedAmount }) => {
+                        const rate = exchangeRates[currency];
+                        return (
+                          <div key={currency} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline">{currency}</Badge>
+                              <div>
+                                <p className="font-medium text-sm">
+                                  {getCurrencySymbol(currency)}{amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                                {currency !== baseCurrency && (
+                                  <p className="text-xs text-muted-foreground">
+                                    ≈ {getCurrencySymbol(baseCurrency)}{convertedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {rate && rate.change24h !== 0 && (
+                              <div className={`flex items-center gap-1 text-sm ${rate.change24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {rate.change24h > 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+                                {Math.abs(rate.change24h).toFixed(2)}%
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Exchange Rate Table */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Current Exchange Rates (Base: {baseCurrency})</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {Object.entries(exchangeRates)
+                        .filter(([currency]) => currency !== baseCurrency)
+                        .map(([currency, data]: [string, any]) => (
+                          <div key={currency} className="p-3 border rounded-lg bg-muted/30">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm">{currency}</span>
+                              <span className={`text-xs ${data.change24h > 0 ? 'text-green-600' : data.change24h < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                {data.change24h > 0 ? '↑' : data.change24h < 0 ? '↓' : '−'} {Math.abs(data.change24h).toFixed(2)}%
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              1 {baseCurrency} = {data.rate.toFixed(4)} {currency}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* REWARDS TAB */}
+          <TabsContent value="rewards" className="space-y-6">
+            {/* Points Balance */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="size-5" />
+                      Rewards Points
+                    </CardTitle>
+                    <CardDescription>Your points balance and tier status</CardDescription>
+                  </div>
+                  <Dialog open={isAddPointsDialogOpen} onOpenChange={setIsAddPointsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="mr-2 size-4" />
+                        Add Points
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Reward Points</DialogTitle>
+                        <DialogDescription>Earn points for completing activities</DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="points">Points *</Label>
+                          <Input
+                            id="points"
+                            type="number"
+                            value={pointsToAdd}
+                            onChange={(e) => setPointsToAdd(e.target.value)}
+                            placeholder="100"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="points-description">Description *</Label>
+                          <Textarea
+                            id="points-description"
+                            value={pointsDescription}
+                            onChange={(e) => setPointsDescription(e.target.value)}
+                            placeholder="Paid electric bill on time"
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={handleAddPointsManual}>Add Points</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Total Points</p>
+                      <p className="text-4xl font-bold">{pointsBalance.toLocaleString()}</p>
+                    </div>
+                    <Star className="size-16 text-yellow-500" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Current Tier:</span>
+                        <Badge className={tier.color}>{tier.name}</Badge>
+                      </div>
+                      {tier.nextTier && (
+                        <span className="text-sm text-muted-foreground">
+                          {tier.nextTier - pointsBalance} points to {tier.nextTier === 5000 ? 'Diamond' : tier.nextTier === 2500 ? 'Gold' : 'Silver'}
+                        </span>
+                      )}
+                    </div>
+                    <Progress value={tier.progress} className="h-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Available Rewards */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="size-5" />
+                  Available Rewards
+                </CardTitle>
+                <CardDescription>Redeem your points for rewards</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {rewards.map((reward) => {
+                    const canRedeem = pointsBalance >= reward.pointsRequired;
+                    
+                    return (
+                      <div
+                        key={reward.id}
+                        className={`p-4 border rounded-lg ${canRedeem ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}
+                      >
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex items-start justify-between mb-1">
+                              <h4 className="font-medium">{reward.name}</h4>
+                              <Badge variant="secondary" className="text-xs">{reward.pointsRequired} pts</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{reward.description}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="w-full"
+                            disabled={!canRedeem}
+                            onClick={() => handleRedeemReward(reward.id)}
+                          >
+                            {canRedeem ? 'Redeem Now' : 'Not Enough Points'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="size-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>Your latest points transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {rewardTransactions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">No transactions yet</div>
+                ) : (
+                  <div className="space-y-3">
+                    {rewardTransactions.slice(0, 5).map((transaction) => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium text-sm">{transaction.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(transaction.date).toLocaleDateString('en-IN')}
+                          </p>
+                        </div>
+                        <span className={`font-semibold ${transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'}`}>
+                          {transaction.type === 'earned' ? '+' : '-'}{transaction.points}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ANALYTICS TAB */}
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Spending Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="spending" fill="#3b82f6" name="Spending (₹)" />
+                    <Bar dataKey="budget" fill="#10b981" name="Budget (₹)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Spending by Category</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categorySpending}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="spent"
+                        label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categorySpending.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {categorySpending.map((item) => {
+                      const percentage = (item.spent / item.budget) * 100;
+                      return (
+                        <div key={item.category} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                              <span className="text-sm font-medium">{item.category}</span>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              ₹{item.spent.toFixed(2)} / ₹{item.budget.toFixed(2)}
+                            </span>
+                          </div>
+                          <Progress value={Math.min(percentage, 100)} className="h-2" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* MANAGE TAB */}
+          <TabsContent value="manage" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle>Budget Manager</CardTitle>
+                  <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={(open) => {
+                      setIsDialogOpen(open);
+                      if (!open) {
+                        setNewCategory("");
+                        setNewAmount("");
+                        setEditingBudget(null);
+                      }
+                    }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Budget
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{editingBudget ? "Edit Budget" : "Add New Budget"}</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleAddBudget} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="category">Category</Label>
+                          <Select value={newCategory} onValueChange={setNewCategory}>
+                            <SelectTrigger id="category">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIES.map((cat) => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="amount">Monthly Budget (₹)</Label>
+                          <Input
+                            id="amount"
+                            type="number"
+                            step="0.01"
+                            placeholder="5000.00"
+                            value={newAmount}
+                            onChange={(e) => setNewAmount(e.target.value)}
+                          />
+                        </div>
+                        <Button type="submit" className="w-full">
+                          {editingBudget ? "Update Budget" : "Add Budget"}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {budgets.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        No budgets set. Click "Add Budget" to create one.
+                      </p>
+                    ) : (
+                      budgets.map((budget) => (
+                        <div
+                          key={budget.id}
+                          className="flex items-center justify-between p-3 border border-border rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium">{budget.category}</p>
+                            <p className="text-sm text-muted-foreground">
+                              ₹{budget.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} / month
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditBudget(budget)}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteBudget(budget.id)}>
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {categorySpending.map((item) => {
+                      const percentage = (item.spent / item.budget) * 100;
+                      const isOverBudget = percentage > 100;
+
+                      return (
+                        <div key={item.category} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                              <span className="text-sm font-medium">{item.category}</span>
+                              {isOverBudget && <AlertCircle className="w-4 h-4 text-red-500" />}
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              ₹{item.spent.toFixed(2)} / ₹{item.budget.toFixed(2)}
+                            </span>
+                          </div>
+                          <Progress value={Math.min(percentage, 100)} className="h-2" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+                <div className="flex gap-2 mt-4">
+                  <Input
+                    placeholder="Search transactions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {filteredTransactions.map((transaction) => {
+                      const Icon = categoryIcons[transaction.category] || categoryIcons.Other;
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{transaction.description}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs">{transaction.category}</Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(transaction.date).toLocaleDateString('en-IN')}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-semibold ${transaction.type === "credit" ? "text-green-600" : "text-red-600"}`}>
+                              {transaction.type === "credit" ? "+" : "-"}₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      <Toaster />
+    </div>
+  );
+}
+
+// ----- UTILITY FUNCTION -----
+function getCategoryColor(category) {
+  const colors = {
+    Groceries: "#3b82f6",
+    Housing: "#ef4444",
+    Transportation: "#f59e0b",
+    "Dining Out": "#10b981",
+    Healthcare: "#ec4899",
+    Entertainment: "#8b5cf6",
+    Travel: "#06b6d4",
+    Other: "#6b7280",
+  };
+  return colors[category] || "#6b7280";
+}
