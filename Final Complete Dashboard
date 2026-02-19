@@ -1,0 +1,2992 @@
+"use client";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+  RadialBarChart,
+  RadialBar,
+} from "recharts";
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  AlertCircle,
+  ShoppingCart,
+  Home,
+  Car,
+  Utensils,
+  Heart,
+  Smartphone,
+  Plane,
+  Coffee,
+  Plus,
+  Pencil,
+  Trash2,
+  LayoutDashboard,
+  Settings,
+  Receipt,
+  Bell,
+  Calendar,
+  Gift,
+  Award,
+  Star,
+  Clock,
+  Edit,
+  RefreshCw,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  CheckCircle,
+  Search,
+  Filter,
+  Info,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
+  BarChart3,
+  Moon,
+  Sun,
+  Target,
+  Zap,
+  TrendingUpIcon,
+  Sparkles,
+  CircleDollarSign,
+  PiggyBank,
+ 
+  Landmark,
+  ArrowLeftRight,
+  CreditCard,
+  ArrowRight,
+} from "lucide-react";
+
+// ==============================================
+// TYPES
+// ==============================================
+const accounts = [
+  {
+    id: 1,
+    name: "Savings Account",
+    bank: "HDFC Bank",
+    number: "XXXX 4321",
+    balance: 126178.5,
+    type: "Savings",
+    status: "Active",
+    icon: Landmark,
+  },
+  {
+    id: 2,
+    name: "Current Account",
+    bank: "ICICI Bank",
+    number: "XXXX 8912",
+    balance: 45200,
+    type: "Current",
+    status: "Active",
+    icon: Wallet,
+  },
+  {
+    id: 3,
+    name: "Credit Card",
+    bank: "Axis Bank",
+    number: "XXXX 7788",
+    balance: -18500,
+    type: "Credit",
+    status: "Due",
+    icon: CreditCard,
+  },
+];
+
+interface Bill {
+  id: string;
+  name: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  frequency: 'one-time' | 'monthly' | 'quarterly' | 'yearly';
+  category: string;
+  status: 'pending' | 'paid' | 'overdue';
+  reminderDays: number;
+}
+
+interface Reward {
+  id: string;
+  name: string;
+  description: string;
+  pointsRequired: number;
+  category: string;
+  available: boolean;
+}
+
+interface RewardTransaction {
+  id: string;
+  date: string;
+  description: string;
+  points: number;
+  type: 'earned' | 'redeemed';
+}
+
+interface Alert {
+  id: string;
+  type: 'warning' | 'info' | 'critical';
+  title: string;
+  message: string;
+  date: string;
+  read: boolean;
+}
+
+interface Goal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: string;
+  category: string;
+  icon: string;
+}
+
+// ==============================================
+// CONFETTI COMPONENT
+// ==============================================
+const Confetti = ({ show }: { show: boolean }) => {
+  if (!show) return null;
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      {[...Array(50)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-confetti"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: '-10px',
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${3 + Math.random() * 2}s`,
+          }}
+        >
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)],
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ==============================================
+// MAIN APP COMPONENT - INTEGRATED DASHBOARD
+// ==============================================
+
+export default function App() {
+  // ----- THEME STATE -----
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // ----- MILESTONE 2: BANKING STATE -----
+  const [balance, setBalance] = useState(125678.50);
+  
+  const [transactions, setTransactions] = useState([
+    {
+      id: "1",
+      description: "Reliance Fresh",
+      amount: 2850.45,
+      category: "Groceries",
+      date: "2026-01-18",
+      type: "debit",
+    },
+    {
+      id: "2",
+      description: "Salary Deposit",
+      amount: 85000.0,
+      category: "Other",
+      date: "2026-01-15",
+      type: "credit",
+    },
+    {
+      id: "3",
+      description: "HP Petrol Pump",
+      amount: 3500.0,
+      category: "Transportation",
+      date: "2026-01-17",
+      type: "debit",
+    },
+    {
+      id: "4",
+      description: "Netflix Subscription",
+      amount: 649.0,
+      category: "Entertainment",
+      date: "2026-01-16",
+      type: "debit",
+    },
+    {
+      id: "5",
+      description: "Domino's Pizza",
+      amount: 850.0,
+      category: "Dining Out",
+      date: "2026-01-19",
+      type: "debit",
+    },
+    {
+      id: "6",
+      description: "Rent Payment",
+      amount: 25000.0,
+      category: "Housing",
+      date: "2026-01-01",
+      type: "debit",
+    },
+    {
+      id: "7",
+      description: "Apollo Pharmacy",
+      amount: 1250.67,
+      category: "Healthcare",
+      date: "2026-01-14",
+      type: "debit",
+    },
+    {
+      id: "8",
+      description: "Starbucks",
+      amount: 450.0,
+      category: "Dining Out",
+      date: "2026-01-20",
+      type: "debit",
+    },
+    {
+      id: "9",
+      description: "Amazon Purchase",
+      amount: 4599.99,
+      category: "Other",
+      date: "2026-01-13",
+      type: "debit",
+    },
+    {
+      id: "10",
+      description: "Uber Ride",
+      amount: 285.0,
+      category: "Transportation",
+      date: "2026-01-19",
+      type: "debit",
+    },
+  ]);
+
+  const [budgets, setBudgets] = useState([
+    { id: "1", category: "Groceries", amount: 12000 },
+    { id: "2", category: "Housing", amount: 25000 },
+    { id: "3", category: "Transportation", amount: 8000 },
+    { id: "4", category: "Dining Out", amount: 5000 },
+    { id: "5", category: "Entertainment", amount: 3000 },
+  ]);
+
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [newCategory, setNewCategory] = useState("");
+  const [newAmount, setNewAmount] = useState("");
+
+  // ----- MILESTONE 3: BILLS STATE -----
+  const [bills, setBills] = useState<Bill[]>([
+    {
+      id: '1',
+      name: 'Electric Bill',
+      amount: 2500.50,
+      currency: 'INR',
+      dueDate: '2026-02-10',
+      frequency: 'monthly',
+      category: 'utilities',
+      status: 'pending',
+      reminderDays: 3,
+    },
+    {
+      id: '2',
+      name: 'Internet Service',
+      amount: 999.0,
+      currency: 'INR',
+      dueDate: '2026-02-15',
+      frequency: 'monthly',
+      category: 'utilities',
+      status: 'pending',
+      reminderDays: 5,
+    },
+    {
+      id: '3',
+      name: 'Rent',
+      amount: 25000.00,
+      currency: 'INR',
+      dueDate: '2026-03-01',
+      frequency: 'monthly',
+      category: 'rent',
+      status: 'pending',
+      reminderDays: 7,
+    },
+    {
+      id: '4',
+      name: 'Car Insurance',
+      amount: 15000.00,
+      currency: 'INR',
+      dueDate: '2026-02-05',
+      frequency: 'quarterly',
+      category: 'insurance',
+      status: 'pending',
+      reminderDays: 5,
+    },
+  ]);
+
+  const [billFormData, setBillFormData] = useState({
+    name: '',
+    amount: '',
+    currency: 'INR',
+    dueDate: '',
+    frequency: 'monthly' as Bill['frequency'],
+    category: 'utilities',
+    reminderDays: '3',
+  });
+
+  const [isBillDialogOpen, setIsBillDialogOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<Bill | null>(null);
+
+  // ----- MILESTONE 3: REWARDS STATE -----
+  const [pointsBalance, setPointsBalance] = useState(1250);
+  const [rewards] = useState<Reward[]>([
+    {
+      id: '1',
+      name: '₹500 Gift Card',
+      description: 'Redeem for a ₹500 Amazon gift card',
+      pointsRequired: 500,
+      category: 'gift-cards',
+      available: true,
+    },
+    {
+      id: '2',
+      name: '₹1000 Gift Card',
+      description: 'Redeem for a ₹1000 Flipkart gift card',
+      pointsRequired: 1000,
+      category: 'gift-cards',
+      available: true,
+    },
+    {
+      id: '3',
+      name: '₹2000 Statement Credit',
+      description: 'Apply ₹2000 credit to your next bill',
+      pointsRequired: 2000,
+      category: 'bill-credit',
+      available: true,
+    },
+    {
+      id: '4',
+      name: 'Premium Features (1 month)',
+      description: 'Unlock premium features for 1 month',
+      pointsRequired: 750,
+      category: 'subscription',
+      available: true,
+    },
+  ]);
+
+  const [rewardTransactions, setRewardTransactions] = useState<RewardTransaction[]>([
+    {
+      id: '1',
+      date: '2026-02-01',
+      description: 'Paid electric bill on time',
+      points: 100,
+      type: 'earned',
+    },
+    {
+      id: '2',
+      date: '2026-01-28',
+      description: 'Paid all bills for January',
+      points: 250,
+      type: 'earned',
+    },
+  ]);
+
+  const [isAddPointsDialogOpen, setIsAddPointsDialogOpen] = useState(false);
+  const [pointsToAdd, setPointsToAdd] = useState('');
+  const [pointsDescription, setPointsDescription] = useState('');
+
+  // ----- MILESTONE 3: CURRENCY STATE -----
+  const [baseCurrency, setBaseCurrency] = useState('INR');
+  const [exchangeRates, setExchangeRates] = useState<Record<string, any>>({
+    INR: { currency: 'INR', rate: 1.0, change24h: 0, symbol: '₹' },
+    USD: { currency: 'USD', rate: 0.012, change24h: 0.1, symbol: '$' },
+    EUR: { currency: 'EUR', rate: 0.011, change24h: -0.2, symbol: '€' },
+    GBP: { currency: 'GBP', rate: 0.0095, change24h: 0.3, symbol: '£' },
+    JPY: { currency: 'JPY', rate: 1.80, change24h: 0.5, symbol: '¥' },
+    CAD: { currency: 'CAD', rate: 0.016, change24h: -0.1, symbol: 'C$' },
+    AUD: { currency: 'AUD', rate: 0.018, change24h: 0.2, symbol: 'A$' },
+    SGD: { currency: 'SGD', rate: 0.016, change24h: 0.1, symbol: 'S$' },
+    AED: { currency: 'AED', rate: 0.044, change24h: 0.0, symbol: 'د.إ' },
+  });
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
+
+  // ----- MILESTONE 4: ALERTS STATE -----
+  const [alerts, setAlerts] = useState<Alert[]>([
+    {
+      id: 'a1',
+      type: 'critical',
+      title: 'High Burn Rate Detected',
+      message: 'Your monthly burn rate has increased by 23% compared to last month. Current rate: ₹39,434/month',
+      date: '2026-02-04T09:30:00',
+      read: false,
+    },
+    {
+      id: 'a2',
+      type: 'warning',
+      title: 'Unusual Spending Pattern',
+      message: 'Entertainment expenses are higher than your average. Review recent subscriptions.',
+      date: '2026-02-03T14:20:00',
+      read: false,
+    },
+    {
+      id: 'a3',
+      type: 'info',
+      title: 'Payment Received',
+      message: 'Salary deposit of ₹85,000 has been processed successfully.',
+      date: '2026-02-03T11:15:00',
+      read: true,
+    },
+    {
+      id: 'a4',
+      type: 'warning',
+      title: 'Bill Due Soon',
+      message: 'Electric Bill of ₹2,500.50 is due on Feb 10, 2026',
+      date: '2026-02-02T08:00:00',
+      read: true,
+    },
+    {
+      id: 'a5',
+      type: 'critical',
+      title: 'Budget Threshold Exceeded',
+      message: 'Housing spending has exceeded the monthly budget of ₹25,000.',
+      date: '2026-02-01T16:45:00',
+      read: false,
+    },
+  ]);
+
+  const [filterAlertType, setFilterAlertType] = useState<string>('all');
+  const [filterAlertStatus, setFilterAlertStatus] = useState<string>('all');
+  const [searchAlertQuery, setSearchAlertQuery] = useState('');
+
+  // ----- NEW: GOALS STATE -----
+  const [goals, setGoals] = useState<Goal[]>([
+    {
+      id: '1',
+      name: 'Emergency Fund',
+      targetAmount: 100000,
+      currentAmount: 45234,
+      deadline: '2026-12-31',
+      category: 'savings',
+      icon: 'piggy-bank',
+    },
+    {
+      id: '2',
+      name: 'Vacation to Maldives',
+      targetAmount: 150000,
+      currentAmount: 32000,
+      deadline: '2026-08-15',
+      category: 'travel',
+      icon: 'plane',
+    },
+    {
+      id: '3',
+      name: 'New Laptop',
+      targetAmount: 80000,
+      currentAmount: 55000,
+      deadline: '2026-06-01',
+      category: 'shopping',
+      icon: 'smartphone',
+    },
+  ]);
+
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [goalFormData, setGoalFormData] = useState({
+    name: '',
+    targetAmount: '',
+    currentAmount: '',
+    deadline: '',
+    category: 'savings',
+    icon: 'target',
+  });
+
+  // ----- CALCULATE STATISTICS -----
+  const stats = {
+    balance: balance,
+    income: transactions
+      .filter((t) => t.type === "credit")
+      .reduce((sum, t) => sum + t.amount, 0),
+    expenses: transactions
+      .filter((t) => t.type === "debit")
+      .reduce((sum, t) => sum + t.amount, 0),
+    savings: 45234.67,
+  };
+
+  // Calculate merchant data
+  const merchantData = transactions
+    .filter(t => t.type === "debit")
+    .reduce((acc, t) => {
+      const existing = acc.find(m => m.merchant === t.description);
+      if (existing) {
+        existing.totalSpent += t.amount;
+        existing.transactions += 1;
+      } else {
+        acc.push({
+          merchant: t.description,
+          totalSpent: t.amount,
+          transactions: 1,
+          category: t.category,
+        });
+      }
+      return acc;
+    }, [] as any[])
+    .sort((a, b) => b.totalSpent - a.totalSpent);
+
+  // Cash flow data (last 6 months)
+  const cashFlowData = [
+    { month: 'Sep', income: 78000, expenses: 42000, netCashFlow: 36000 },
+    { month: 'Oct', income: 80000, expenses: 45000, netCashFlow: 35000 },
+    { month: 'Nov', income: 82000, expenses: 43000, netCashFlow: 39000 },
+    { month: 'Dec', income: 85000, expenses: 48000, netCashFlow: 37000 },
+    { month: 'Jan', income: 85000, expenses: 39434.11, netCashFlow: 45565.89 },
+    { month: 'Feb', income: 0, expenses: 3150, netCashFlow: -3150 },
+  ];
+
+  // Calculate burn rate
+  const calculateBurnRate = () => {
+    const lastMonthExpenses = cashFlowData.slice(-2, -1)[0]?.expenses || 0;
+    return lastMonthExpenses;
+  };
+
+  const burnRate = calculateBurnRate();
+  const runway = stats.balance / burnRate;
+  // Calculate financial health score (0–100)
+const calculateHealthScore = () => {
+  let score = 0;
+
+  // Income vs Expenses (30 points)
+  const savingsRate =
+    stats.income > 0
+      ? ((stats.income - stats.expenses) / stats.income) * 100
+      : 0;
+  score += Math.min(30, (savingsRate / 30) * 30);
+
+  // Emergency fund (25 points)
+  const emergencyFundMonths =
+    burnRate > 0 ? stats.savings / burnRate : 0;
+  score += Math.min(25, (emergencyFundMonths / 6) * 25);
+
+  // Budget adherence (25 points)
+  const categorySpending = budgets.map((b) => {
+    const spent = transactions
+      .filter(
+        (t) => t.type === "debit" && t.category === b.category
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return {
+      spent,
+      budget: b.amount,
+    };
+  });
+
+  const budgetAdherence =
+    categorySpending.length > 0
+      ? categorySpending.reduce((acc, cat) => {
+          if (cat.budget === 0) return acc;
+          const adherence = Math.max(
+            0,
+            Math.min(
+              1,
+              1 - (cat.spent - cat.budget) / cat.budget
+            )
+          );
+          return acc + adherence;
+        }, 0) / categorySpending.length
+      : 1;
+
+  score += budgetAdherence * 25;
+
+  // Bills paid on time (20 points)
+  const paidBills = bills.filter(
+    (b) => b.status === "paid"
+  ).length;
+  score += bills.length > 0 ? (paidBills / bills.length) * 20 : 20;
+
+  return Math.round(Math.min(100, score));
+};
+  const healthScore = calculateHealthScore();
+
+
+  
+    // ----- MILESTONE 2: BUDGET HANDLERS -----
+    const categorySpending = transactions
+      .filter((t) => t.type === "debit")
+      .reduce((acc, transaction) => {
+        const existing = acc.find(
+          (item) => item.category === transaction.category,
+        );
+        if (existing) {
+          existing.spent += transaction.amount;
+        } else {
+          const budget = budgets.find((b) => b.category === transaction.category);
+          acc.push({
+            category: transaction.category,
+            spent: transaction.amount,
+            budget: budget?.amount || 0,
+            color: getCategoryColor(transaction.category),
+          });
+        }
+        return acc;
+      }, []);
+
+    budgets.forEach((budget) => {
+      if (!categorySpending.find((item) => item.category === budget.category)) {
+        categorySpending.push({
+          category: budget.category,
+          spent: 0,
+          budget: budget.amount,
+          color: getCategoryColor(budget.category),
+        });
+      }
+    });
+
+    const trendData = [
+      { month: "Aug", spending: 45000, budget: 48000 },
+      { month: "Sep", spending: 42000, budget: 48000 },
+      { month: "Oct", spending: 45000, budget: 48000 },
+      { month: "Nov", spending: 43000, budget: 48000 },
+      { month: "Dec", spending: 48000, budget: 48000 },
+      { month: "Jan", spending: 39434.11, budget: 53000 },
+    ];
+
+    const handleAddBudget = (e) => {
+      e.preventDefault();
+      if (!newCategory || !newAmount) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+
+      const budgetData = {
+        id: Date.now().toString(),
+        category: newCategory,
+        amount: parseFloat(newAmount),
+      };
+
+      if (editingBudget) {
+        setBudgets(
+          budgets.map((b) => (b.id === editingBudget.id ? budgetData : b)),
+        );
+        toast.success("Budget updated successfully");
+      } else {
+        setBudgets([...budgets, budgetData]);
+        toast.success("Budget added successfully");
+      }
+
+      setIsDialogOpen(false);
+      setNewCategory("");
+      setNewAmount("");
+      setEditingBudget(null);
+    };
+
+    const handleEditBudget = (budget) => {
+      setEditingBudget(budget);
+      setNewCategory(budget.category);
+      setNewAmount(budget.amount.toString());
+      setIsDialogOpen(true);
+    };
+
+    const handleDeleteBudget = (id) => {
+      setBudgets(budgets.filter((b) => b.id !== id));
+      toast.success("Budget deleted successfully");
+    };
+
+    // ----- MILESTONE 3: BILLS HANDLERS -----
+    const resetBillForm = () => {
+      setBillFormData({
+        name: '',
+        amount: '',
+        currency: 'INR',
+        dueDate: '',
+        frequency: 'monthly',
+        category: 'utilities',
+        reminderDays: '3',
+      });
+    };
+
+    const handleAddBill = (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!billFormData.name || !billFormData.amount || !billFormData.dueDate) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      const billData: Bill = {
+        id: Date.now().toString(),
+        name: billFormData.name,
+        amount: parseFloat(billFormData.amount),
+        currency: billFormData.currency,
+        dueDate: billFormData.dueDate,
+        frequency: billFormData.frequency,
+        category: billFormData.category,
+        status: 'pending',
+        reminderDays: parseInt(billFormData.reminderDays),
+      };
+
+      if (editingBill) {
+        setBills(bills.map(bill => bill.id === editingBill.id ? { ...billData, id: editingBill.id } : bill));
+        toast.success('Bill updated successfully');
+        setEditingBill(null);
+      } else {
+        setBills([...bills, billData]);
+        toast.success('Bill added successfully');
+      }
+    
+      setIsBillDialogOpen(false);
+      resetBillForm();
+    };
+
+    const handleEditBill = (bill: Bill) => {
+      setEditingBill(bill);
+      setBillFormData({
+        name: bill.name,
+        amount: bill.amount.toString(),
+        currency: bill.currency,
+        dueDate: bill.dueDate,
+        frequency: bill.frequency,
+        category: bill.category,
+        reminderDays: bill.reminderDays.toString(),
+      });
+      setIsBillDialogOpen(true);
+    };
+
+    const handleDeleteBill = (id: string) => {
+      setBills(bills.filter(bill => bill.id !== id));
+      toast.success('Bill deleted successfully');
+    };
+
+    const handleMarkAsPaid = (id: string) => {
+      setBills(bills.map(bill => {
+        if (bill.id === id) {
+          const daysUntilDue = getDaysUntilDue(bill.dueDate);
+          const pointsEarned = daysUntilDue >= 0 ? 100 : 50;
+        
+          handleAddRewardPoints(pointsEarned, `Paid ${bill.name}`);
+        
+          return { ...bill, status: 'paid' as Bill['status'] };
+        }
+        return bill;
+      }));
+    };
+
+    const getDaysUntilDue = (dueDate: string) => {
+      const today = new Date();
+      const due = new Date(dueDate);
+      const diffTime = due.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    };
+
+    const getUpcomingBills = () => {
+      return bills.filter((bill) => {
+        if (bill.status === 'paid') return false;
+        const daysUntil = getDaysUntilDue(bill.dueDate);
+        return daysUntil <= bill.reminderDays && daysUntil >= -7;
+      }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    };
+
+    // ----- MILESTONE 3: REWARDS HANDLERS -----
+    const handleAddRewardPoints = (points: number, description: string) => {
+      setPointsBalance(pointsBalance + points);
+      const newTransaction: RewardTransaction = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        description,
+        points,
+        type: 'earned',
+      };
+      setRewardTransactions([newTransaction, ...rewardTransactions]);
+    };
+
+    const handleAddPointsManual = () => {
+      const points = parseInt(pointsToAdd);
+      if (!points || points <= 0) {
+        toast.error('Please enter a valid number of points');
+        return;
+      }
+      if (!pointsDescription) {
+        toast.error('Please enter a description');
+        return;
+      }
+
+      handleAddRewardPoints(points, pointsDescription);
+      toast.success(`Added ${points} points!`);
+      setPointsToAdd('');
+      setPointsDescription('');
+      setIsAddPointsDialogOpen(false);
+    };
+
+    const getRewardMonetaryValue = (rewardName: string): number => {
+      const match = rewardName.match(/₹(\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    };
+
+    const handleRedeemReward = (rewardId: string) => {
+      const reward = rewards.find(r => r.id === rewardId);
+      if (!reward) return;
+
+      if (pointsBalance < reward.pointsRequired) {
+        toast.error('Not enough points to redeem this reward');
+        return;
+      }
+
+      setPointsBalance(pointsBalance - reward.pointsRequired);
+    
+      const newTransaction: RewardTransaction = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        description: `Redeemed: ${reward.name}`,
+        points: reward.pointsRequired,
+        type: 'redeemed',
+      };
+      setRewardTransactions([newTransaction, ...rewardTransactions]);
+    
+      const monetaryValue = getRewardMonetaryValue(reward.name);
+      if (monetaryValue > 0) {
+        setBalance(balance + monetaryValue);
+      
+        const creditTransaction = {
+          id: `reward-${Date.now()}`,
+          description: `Reward Redeemed: ${reward.name}`,
+          amount: monetaryValue,
+          category: 'Other',
+          date: new Date().toISOString().split('T')[0],
+          type: 'credit' as const,
+        };
+        setTransactions([creditTransaction, ...transactions]);
+      
+        // Show confetti!
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 5000);
+      
+        toast.success(`Redeemed: ${reward.name} - ₹${monetaryValue} added to your balance!`, {
+          icon: '🎉',
+        });
+      } else {
+        toast.success(`Redeemed: ${reward.name}`);
+      }
+    };
+
+    const getTier = (points: number) => {
+      if (points >= 5000) return { name: 'Diamond', color: 'text-purple-600', nextTier: null, progress: 100 };
+      if (points >= 2500) return { name: 'Gold', color: 'text-yellow-600', nextTier: 5000, progress: ((points - 2500) / 2500) * 100 };
+      if (points >= 1000) return { name: 'Silver', color: 'text-gray-500', nextTier: 2500, progress: ((points - 1000) / 1500) * 100 };
+      return { name: 'Bronze', color: 'text-orange-700', nextTier: 1000, progress: (points / 1000) * 100 };
+    };
+
+    // ----- MILESTONE 3: CURRENCY HANDLERS -----
+    const fetchExchangeRates = async () => {
+      setIsLoadingRates(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    
+      const mockRates: Record<string, any> = {
+        INR: { currency: 'INR', rate: 1.0, change24h: 0, symbol: '₹' },
+        USD: { currency: 'USD', rate: 0.012, change24h: Math.random() * 0.5 - 0.25, symbol: '$' },
+        EUR: { currency: 'EUR', rate: 0.011, change24h: Math.random() * 0.5 - 0.25, symbol: '€' },
+        GBP: { currency: 'GBP', rate: 0.0095, change24h: Math.random() * 0.5 - 0.25, symbol: '£' },
+        JPY: { currency: 'JPY', rate: 1.80, change24h: Math.random() * 0.5 - 0.25, symbol: '¥' },
+        CAD: { currency: 'CAD', rate: 0.016, change24h: Math.random() * 0.5 - 0.25, symbol: 'C$' },
+        AUD: { currency: 'AUD', rate: 0.018, change24h: Math.random() * 0.5 - 0.25, symbol: 'A$' },
+        SGD: { currency: 'SGD', rate: 0.016, change24h: Math.random() * 0.5 - 0.25, symbol: 'S$' },
+        AED: { currency: 'AED', rate: 0.044, change24h: Math.random() * 0.5 - 0.25, symbol: 'د.إ' },
+      };
+
+      const baseRate = mockRates[baseCurrency]?.rate || 1;
+      const convertedRates: Record<string, any> = {};
+    
+      Object.entries(mockRates).forEach(([currency, data]: [string, any]) => {
+        convertedRates[currency] = {
+          ...data,
+          rate: data.rate / baseRate,
+        };
+      });
+
+      setExchangeRates(convertedRates);
+      setIsLoadingRates(false);
+      toast.success('Exchange rates updated');
+    };
+
+    const getCurrencySymbol = (currency: string) => {
+      return exchangeRates[currency]?.symbol || currency;
+    };
+
+    const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string) => {
+      if (fromCurrency === toCurrency) return amount;
+    
+      const fromRate = exchangeRates[fromCurrency]?.rate || 1;
+      const toRate = exchangeRates[toCurrency]?.rate || 1;
+    
+      const baseAmount = amount / fromRate;
+      return baseAmount * toRate;
+    };
+
+    const billsByCurrency = bills.reduce((acc, bill) => {
+      acc[bill.currency] = (acc[bill.currency] || 0) + bill.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const calculateCurrencySummary = () => {
+      let totalAmount = 0;
+      const breakdown: any[] = [];
+
+      Object.entries(billsByCurrency).forEach(([currency, amount]) => {
+        const convertedAmount = convertCurrency(amount, currency, baseCurrency);
+        totalAmount += convertedAmount;
+      
+        breakdown.push({
+          currency,
+          amount,
+          convertedAmount,
+        });
+      });
+
+      return {
+        baseCurrency,
+        totalAmount,
+        breakdown: breakdown.sort((a, b) => b.convertedAmount - a.convertedAmount),
+      };
+    };
+
+    // ----- MILESTONE 4: ALERTS HANDLERS -----
+    const markAlertAsRead = (id: string) => {
+      setAlerts(alerts.map(alert =>
+        alert.id === id ? { ...alert, read: true } : alert
+      ));
+    };
+
+    const markAllAlertsAsRead = () => {
+      setAlerts(alerts.map(alert => ({ ...alert, read: true })));
+      toast.success('All alerts marked as read');
+    };
+
+    const getAlertIcon = (type: string) => {
+      switch (type) {
+        case 'critical':
+          return <AlertCircle className="size-5 text-red-600" />;
+        case 'warning':
+          return <AlertTriangle className="size-5 text-yellow-600" />;
+        case 'info':
+          return <Info className="size-5 text-blue-600" />;
+        default:
+          return <Bell className="size-5" />;
+      }
+    };
+
+    const getBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
+      switch (type) {
+        case 'critical':
+          return 'destructive';
+        case 'warning':
+          return 'default';
+        case 'info':
+          return 'secondary';
+        default:
+          return 'outline';
+      }
+    };
+
+    const filteredAlerts = alerts.filter(alert => {
+      const matchesType = filterAlertType === 'all' || alert.type === filterAlertType;
+      const matchesStatus = filterAlertStatus === 'all' ||
+        (filterAlertStatus === 'read' && alert.read) ||
+        (filterAlertStatus === 'unread' && !alert.read);
+      const matchesSearch = searchAlertQuery === '' ||
+        alert.title.toLowerCase().includes(searchAlertQuery.toLowerCase()) ||
+        alert.message.toLowerCase().includes(searchAlertQuery.toLowerCase());
+    
+      return matchesType && matchesStatus && matchesSearch;
+    });
+
+    // ----- NEW: GOALS HANDLERS -----
+    const handleAddGoal = (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!goalFormData.name || !goalFormData.targetAmount || !goalFormData.deadline) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      const newGoal: Goal = {
+        id: Date.now().toString(),
+        name: goalFormData.name,
+        targetAmount: parseFloat(goalFormData.targetAmount),
+        currentAmount: parseFloat(goalFormData.currentAmount) || 0,
+        deadline: goalFormData.deadline,
+        category: goalFormData.category,
+        icon: goalFormData.icon,
+      };
+
+      setGoals([...goals, newGoal]);
+      toast.success('Goal added successfully!', { icon: '🎯' });
+      setIsGoalDialogOpen(false);
+      setGoalFormData({
+        name: '',
+        targetAmount: '',
+        currentAmount: '',
+        deadline: '',
+        category: 'savings',
+        icon: 'target',
+      });
+    };
+
+    const handleUpdateGoalProgress = (goalId: string, amount: number) => {
+      setGoals(goals.map(goal => {
+        if (goal.id === goalId) {
+          const newAmount = Math.min(goal.currentAmount + amount, goal.targetAmount);
+          if (newAmount === goal.targetAmount) {
+            toast.success(`🎉 Goal "${goal.name}" completed!`, {
+              description: 'Congratulations on reaching your target!',
+            });
+          }
+          return { ...goal, currentAmount: newAmount };
+        }
+        return goal;
+      }));
+    };
+
+    // ----- MILESTONE 4: EXPORT HANDLERS -----
+    const exportToCSV = (data: any[], filename: string, headers: string[]) => {
+      const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(h => `"${row[h] || ''}"`).join(',')),
+      ].join('\n');
+    
+      downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+      toast.success(`${filename} exported successfully`);
+    };
+
+    const exportTransactionsToCSV = () => {
+      const data = transactions.map(t => ({
+        Date: t.date,
+        Description: t.description,
+        Category: t.category,
+        Type: t.type,
+        Amount: t.amount.toFixed(2),
+      }));
+      exportToCSV(data, 'transactions', ['Date', 'Description', 'Category', 'Type', 'Amount']);
+    };
+
+    const exportBillsToCSV = () => {
+      const data = bills.map(b => ({
+        Name: b.name,
+        Amount: b.amount.toFixed(2),
+        Currency: b.currency,
+        DueDate: b.dueDate,
+        Frequency: b.frequency,
+        Category: b.category,
+        Status: b.status,
+      }));
+      exportToCSV(data, 'bills', ['Name', 'Amount', 'Currency', 'DueDate', 'Frequency', 'Category', 'Status']);
+    };
+
+    const exportAlertsToCSV = () => {
+      const data = filteredAlerts.map(a => ({
+        Date: new Date(a.date).toLocaleString(),
+        Type: a.type,
+        Title: a.title,
+        Message: a.message,
+        Status: a.read ? 'Read' : 'Unread',
+      }));
+      exportToCSV(data, 'alerts', ['Date', 'Type', 'Title', 'Message', 'Status']);
+    };
+
+    const exportCashFlowToCSV = () => {
+      const data = cashFlowData.map(d => ({
+        Month: d.month,
+        Income: d.income.toFixed(2),
+        Expenses: d.expenses.toFixed(2),
+        NetCashFlow: d.netCashFlow.toFixed(2),
+      }));
+      exportToCSV(data, 'cash-flow', ['Month', 'Income', 'Expenses', 'NetCashFlow']);
+    };
+
+    const exportSummaryToPDF = () => {
+      const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Financial Summary Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+          h1 { color: #1a1a1a; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+          .metric { border: 1px solid #e5e7eb; padding: 20px; margin: 10px 0; border-radius: 8px; }
+          .metric-label { font-size: 14px; color: #666; }
+          .metric-value { font-size: 24px; font-weight: bold; color: #1a1a1a; }
+        </style>
+      </head>
+      <body>
+        <h1>Financial Summary Report</h1>
+        <p>Generated on ${new Date().toLocaleString()}</p>
+        <div class="metric">
+          <div class="metric-label">Current Balance</div>
+          <div class="metric-value">₹${stats.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Total Income</div>
+          <div class="metric-value">₹${stats.income.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Total Expenses</div>
+          <div class="metric-value">₹${stats.expenses.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Monthly Burn Rate</div>
+          <div class="metric-value">₹${burnRate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Runway</div>
+          <div class="metric-value">${runway.toFixed(1)} months</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Financial Health Score</div>
+          <div class="metric-value">${healthScore}/100</div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+        toast.success('Opening summary report for printing');
+      }
+    };
+
+    const downloadFile = (content: string, filename: string, mimeType: string) => {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    // ----- FILTER TRANSACTIONS -----
+    const filteredTransactions = transactions.filter((transaction) => {
+      const matchesCategory =
+        filterCategory === "all" || transaction.category === filterCategory;
+      const matchesSearch = transaction.description
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+
+    const categories = Array.from(
+      new Set(transactions.map((t) => t.category)),
+    ).sort();
+
+    const categoryIcons = {
+      Groceries: ShoppingCart,
+      Housing: Home,
+      Transportation: Car,
+      "Dining Out": Utensils,
+      Healthcare: Heart,
+      Entertainment: Smartphone,
+      Travel: Plane,
+      Other: Coffee,
+    };
+
+    const CATEGORIES = [
+      "Groceries",
+      "Housing",
+      "Transportation",
+      "Dining Out",
+      "Healthcare",
+      "Entertainment",
+      "Travel",
+      "Other",
+    ];
+
+    const BILL_CATEGORIES = ["utilities", "rent", "insurance", "subscriptions", "other"];
+    const CURRENCIES = ["INR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "SGD", "AED"];
+
+    const tier = getTier(pointsBalance);
+    const upcomingBills = getUpcomingBills();
+    const currencySummary = calculateCurrencySummary();
+    const unreadAlerts = alerts.filter(a => !a.read).length;
+
+    // Health score color
+    const getHealthScoreColor = (score: number) => {
+      if (score >= 80) return 'text-green-600';
+      if (score >= 60) return 'text-yellow-600';
+      if (score >= 40) return 'text-orange-600';
+      return 'text-red-600';
+    };
+
+    const getHealthScoreBgColor = (score: number) => {
+      if (score >= 80) return 'from-green-50 to-emerald-50';
+      if (score >= 60) return 'from-yellow-50 to-amber-50';
+      if (score >= 40) return 'from-orange-50 to-red-50';
+      return 'from-red-50 to-pink-50';
+    };
+
+    // ----- RENDER DASHBOARD -----
+    return (
+      <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'}`}>
+        <Confetti show={showConfetti} />
+      
+        <div className="container mx-auto p-4 md:p-6 lg:p-8">
+          {/* HEADER */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
+                  <Wallet className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Digital Banking Dashboard
+                  </h1>
+                  <p className="text-muted-foreground mt-1">
+                    Manage your finances with ease
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className="rounded-full"
+                >
+                  {isDarkMode ? <Sun className="size-5" /> : <Moon className="size-5" />}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="rounded-full">
+                      <Download className="size-4 mr-2" />
+                      Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Export to CSV</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={exportTransactionsToCSV}>
+                      <FileSpreadsheet className="size-4 mr-2" />
+                      Transactions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportBillsToCSV}>
+                      <FileSpreadsheet className="size-4 mr-2" />
+                      Bills
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportAlertsToCSV}>
+                      <FileSpreadsheet className="size-4 mr-2" />
+                      Alerts
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportCashFlowToCSV}>
+                      <FileSpreadsheet className="size-4 mr-2" />
+                      Cash Flow Data
+                    </DropdownMenuItem>
+                  
+                    <DropdownMenuSeparator />
+                  
+                    <DropdownMenuLabel>Export to PDF</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={exportSummaryToPDF}>
+                      <FileText className="size-4 mr-2" />
+                      Financial Summary
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Financial Health Score Banner */}
+            <Card className={`mb-6 bg-gradient-to-r ${getHealthScoreBgColor(healthScore)} border-none shadow-lg`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-20 h-20">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadialBarChart
+                            cx="50%"
+                            cy="50%"
+                            innerRadius="70%"
+                            outerRadius="100%"
+                            barSize={10}
+                            data={[{ value: healthScore, fill: healthScore >= 80 ? '#10b981' : healthScore >= 60 ? '#f59e0b' : '#ef4444' }]}
+                            startAngle={90}
+                            endAngle={-270}
+                          >
+                            <RadialBar
+                              background
+                              dataKey="value"
+                              cornerRadius={10}
+                            />
+                          </RadialBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className={`text-lg font-bold ${getHealthScoreColor(healthScore)}`}>
+                          {healthScore}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Sparkles className="size-5 text-yellow-600" />
+                        Financial Health Score
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {healthScore >= 80 && "Excellent! Keep up the great work! 🎉"}
+                        {healthScore >= 60 && healthScore < 80 && "Good progress! Room for improvement 👍"}
+                        {healthScore >= 40 && healthScore < 60 && "Fair. Consider reviewing your spending 💡"}
+                        {healthScore < 40 && "Needs attention. Let's improve this! 📈"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="hidden md:flex items-center gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {((stats.income - stats.expenses) / stats.income * 100).toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Savings Rate</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {runway.toFixed(1)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Months Runway</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {bills.filter(b => b.status === 'paid').length}/{bills.length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Bills Paid</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ACCOUNT SUMMARY CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Current Balance
+                </CardTitle>
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
+                  <Wallet className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                  ₹{stats.balance.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <TrendingUpIcon className="size-3 text-green-600" />
+                  Runway: {runway.toFixed(1)} months
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Monthly Burn Rate
+                </CardTitle>
+                <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-md">
+                  <Activity className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+                  ₹{burnRate.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Average monthly spend
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400/20 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Alerts
+                </CardTitle>
+                <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-md relative">
+                  <Bell className="h-4 w-4 text-white" />
+                  {unreadAlerts > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-red-600">{unreadAlerts}</span>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+                  {unreadAlerts}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {unreadAlerts > 0 ? 'Needs attention' : 'All clear ✓'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-transparent rounded-full -mr-16 -mt-16" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Reward Points
+                </CardTitle>
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-md">
+                  <Star className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+                  {pointsBalance.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Award className="size-3" />
+                  {tier.name} Tier
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+
+
+          {/* MAIN CONTENT TABS */}
+
+          <Tabs defaultValue="insights" className="space-y-6">
+            <TabsList className="grid w-full max-w-4xl grid-cols-8 gap-8 bg-white/70 backdrop-blur-sm shadow-md rounded-full px-3 py-2">
+              <TabsTrigger value="insights" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Insights
+              </TabsTrigger>
+
+              <TabsTrigger value="alerts" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white relative">
+                <Bell className="w-4 h-4 mr-2" />
+                Alerts
+                {unreadAlerts > 0 && (
+                  <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-xs absolute -top-2 -right-2">
+                    {unreadAlerts}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="overview" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="bills" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+                <Receipt className="w-4 h-4 mr-2" />
+                Bills
+              </TabsTrigger>
+              <TabsTrigger value="rewards" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+                <Gift className="w-4 h-4 mr-2" />
+                Rewards
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white">
+                <Target className="w-4 h-4 mr-2" />
+                Goals
+              </TabsTrigger>
+              <TabsTrigger
+  value="accounts"
+  className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+>
+  <Wallet className="w-4 h-4 mr-2" />
+  <span>Accounts</span>
+
+              </TabsTrigger>
+              <TabsTrigger
+  value="transactions"
+  className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+>
+  <ArrowLeftRight className="w-4 h-4 mr-2" />
+   Transactions
+</TabsTrigger>
+
+
+            </TabsList>
+
+            {/* MILESTONE 4: INSIGHTS TAB */}
+            <TabsContent value="insights" className="space-y-6">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-none shadow-md">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Net Cash Flow</CardTitle>
+                    <CircleDollarSign className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">
+                      ₹{(stats.income - stats.expenses).toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                    </div>
+                    <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                      <TrendingUp className="size-3" />
+                      Positive flow
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-md">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+                    <TrendingUp className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">
+                      ₹{stats.income.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This period
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-md">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                    <TrendingDown className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-600">
+                      ₹{stats.expenses.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This period
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-md">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Savings</CardTitle>
+                    <PiggyBank className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">
+                      ₹{stats.savings.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Available
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Cash Flow Trend */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Cash Flow Trend</CardTitle>
+                    <CardDescription>6-month income vs expenses overview</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={cashFlowData}>
+                        <defs>
+                          <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip
+                          formatter={(value: number) => `₹${value.toLocaleString()}`}
+                          contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                        />
+                        <Legend />
+                        <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" name="Income" />
+                        <Area type="monotone" dataKey="expenses" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpenses)" name="Expenses" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Top Merchants */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Top Merchants by Spending</CardTitle>
+                    <CardDescription>Highest expense sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={merchantData.slice(0, 6)}>
+                        <defs>
+                          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="merchant" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 12 }} />
+                        <YAxis />
+                        <Tooltip
+                          formatter={(value: number) => `₹${value.toLocaleString()}`}
+                          contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                        />
+                        <Bar dataKey="totalSpent" fill="url(#barGradient)" name="Total Spent" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Merchant Details Table */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle>Detailed Merchant Analysis</CardTitle>
+                  <CardDescription>Complete breakdown of merchant spending</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-blue-50 to-purple-50">
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 font-semibold">Merchant</th>
+                          <th className="text-left py-3 px-4 font-semibold">Category</th>
+                          <th className="text-right py-3 px-4 font-semibold">Transactions</th>
+                          <th className="text-right py-3 px-4 font-semibold">Total Spent</th>
+                          <th className="text-right py-3 px-4 font-semibold">Avg/Transaction</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {merchantData.map((merchant, index) => (
+                          <tr key={index} className="border-b hover:bg-blue-50/50 transition-colors">
+                            <td className="py-3 px-4 font-medium">{merchant.merchant}</td>
+                            <td className="py-3 px-4">
+                              <Badge variant="outline" className="text-xs">
+                                {merchant.category}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 text-right">{merchant.transactions}</td>
+                            <td className="py-3 px-4 text-right font-semibold text-blue-600">
+                              ₹{merchant.totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 px-4 text-right text-muted-foreground">
+                              ₹{(merchant.totalSpent / merchant.transactions).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Spending by Category Chart */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle>Spending Distribution</CardTitle>
+                  <CardDescription>Breakdown by category</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                      <Pie
+                        data={categorySpending}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="spent"
+                      >
+                        {categorySpending.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+          <TabsContent value="accounts" className="space-y-6">
+  {/* ACCOUNTS SECTION */}
+<Card className="mb-6 border-none shadow-lg">
+  <CardHeader>
+    <CardTitle>Accounts</CardTitle>
+    <CardDescription>
+      Your linked bank accounts and cards
+    </CardDescription>
+  </CardHeader>
+
+  <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {accounts.map((account) => {
+      const Icon = account.icon;
+      const isNegative = account.balance < 0;
+
+      return (
+        <div
+          key={account.id}
+          className="rounded-xl border p-4 hover:shadow-md transition"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="rounded-xl bg-primary/10 p-3">
+              <Icon className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">{account.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {account.bank}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Account No</span>
+            <span>{account.number}</span>
+          </div>
+
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-sm text-muted-foreground">
+              Balance
+            </span>
+            <span
+              className={`font-semibold ${
+                isNegative ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              ₹{Math.abs(account.balance).toLocaleString("en-IN")}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </CardContent>
+</Card>
+
+            </TabsContent>
+            <TabsContent value="transactions" className="space-y-6">
+
+  {/* Top Merchants */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Top Merchants by Spending</CardTitle>
+                    <CardDescription>Highest expense sources</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={merchantData.slice(0, 6)}>
+                        <defs>
+                          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={1} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="merchant" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 12 }} />
+                        <YAxis />
+                        <Tooltip
+                          formatter={(value: number) => `₹${value.toLocaleString()}`}
+                          contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                        />
+                        <Bar dataKey="totalSpent" fill="url(#barGradient)" name="Total Spent" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              
+
+              {/* Merchant Details Table */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle>Detailed Merchant Analysis</CardTitle>
+                  <CardDescription>Complete breakdown of merchant spending</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-blue-50 to-purple-50">
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 font-semibold">Merchant</th>
+                          <th className="text-left py-3 px-4 font-semibold">Category</th>
+                          <th className="text-right py-3 px-4 font-semibold">Transactions</th>
+                          <th className="text-right py-3 px-4 font-semibold">Total Spent</th>
+                          <th className="text-right py-3 px-4 font-semibold">Avg/Transaction</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {merchantData.map((merchant, index) => (
+                          <tr key={index} className="border-b hover:bg-blue-50/50 transition-colors">
+                            <td className="py-3 px-4 font-medium">{merchant.merchant}</td>
+                            <td className="py-3 px-4">
+                              <Badge variant="outline" className="text-xs">
+                                {merchant.category}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 text-right">{merchant.transactions}</td>
+                            <td className="py-3 px-4 text-right font-semibold text-blue-600">
+                              ₹{merchant.totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 px-4 text-right text-muted-foreground">
+                              ₹{(merchant.totalSpent / merchant.transactions).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+</TabsContent>
+
+
+            {/* MILESTONE 4: ALERTS TAB */}
+            <TabsContent value="alerts" className="space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">Alert Center</h2>
+                  <p className="text-muted-foreground">
+                    Monitor important notifications and alerts
+                    {unreadAlerts > 0 && (
+                      <span className="ml-2 text-red-600 font-semibold">
+                        ({unreadAlerts} unread)
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={markAllAlertsAsRead} className="rounded-full">
+                    <CheckCircle className="size-4 mr-2" />
+                    Mark All Read
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <Card className="border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search alerts..."
+                        className="pl-10 rounded-full"
+                        value={searchAlertQuery}
+                        onChange={(e) => setSearchAlertQuery(e.target.value)}
+                      />
+                    </div>
+
+                    <Select value={filterAlertType} onValueChange={setFilterAlertType}>
+                      <SelectTrigger className="rounded-full">
+                        <Filter className="size-4 mr-2" />
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="warning">Warning</SelectItem>
+                        <SelectItem value="info">Info</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={filterAlertStatus} onValueChange={setFilterAlertStatus}>
+                      <SelectTrigger className="rounded-full">
+                        <Filter className="size-4 mr-2" />
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="unread">Unread</SelectItem>
+                        <SelectItem value="read">Read</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Alerts List */}
+              <div className="space-y-3">
+                {filteredAlerts.length === 0 ? (
+                  <Card className="border-none shadow-md">
+                    <CardContent className="py-12 text-center">
+                      <Bell className="size-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
+                      <p className="text-muted-foreground">
+                        {searchAlertQuery || filterAlertType !== 'all' || filterAlertStatus !== 'all'
+                          ? 'Try adjusting your filters'
+                          : 'All clear! No alerts to display.'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredAlerts.map((alert) => (
+                    <Card
+                      key={alert.id}
+                      className={`transition-all border-none shadow-md hover:shadow-lg ${!alert.read ? 'border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent' : ''}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="mt-1">
+                            {getAlertIcon(alert.type)}
+                          </div>
+                        
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-semibold">{alert.title}</h3>
+                                <Badge variant={getBadgeVariant(alert.type)} className="rounded-full">
+                                  {alert.type}
+                                </Badge>
+                                {!alert.read && (
+                                  <Badge variant="outline" className="bg-blue-500 text-white border-blue-500 rounded-full">
+                                    New
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                {new Date(alert.date).toLocaleString('en-IN', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                          
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {alert.message}
+                            </p>
+                          
+                            {!alert.read && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => markAlertAsRead(alert.id)}
+                                className="rounded-full"
+                              >
+                                <CheckCircle className="size-4 mr-2" />
+                                Mark as Read
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+
+              {/* Summary Stats */}
+              {filteredAlerts.length > 0 && (
+                <Card className="border-none shadow-md">
+                  <CardHeader>
+                    <CardTitle>Alert Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
+                        <div className="text-2xl font-bold">{alerts.length}</div>
+                        <div className="text-sm text-muted-foreground">Total Alerts</div>
+                      </div>
+                      <div className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg">
+                        <div className="text-2xl font-bold text-red-600">
+                          {alerts.filter(a => a.type === 'critical').length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Critical</div>
+                      </div>
+                      <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-600">
+                          {alerts.filter(a => a.type === 'warning').length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Warnings</div>
+                      </div>
+                      <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {alerts.filter(a => a.type === 'info').length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Info</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* OVERVIEW TAB (Original Milestone 3) */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* Bill Reminders */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bell className="size-5" />
+                        Bill Reminders
+                      </CardTitle>
+                      <CardDescription>Upcoming and overdue bills</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      {upcomingBills.filter(b => getDaysUntilDue(b.dueDate) < 0).length > 0 && (
+                        <Badge variant="destructive" className="rounded-full">
+                          {upcomingBills.filter(b => getDaysUntilDue(b.dueDate) < 0).length} Overdue
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {upcomingBills.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Bell className="size-12 mx-auto mb-2 opacity-50" />
+                      <p>No upcoming bills to remind you about</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {upcomingBills.map((bill) => {
+                        const daysUntil = getDaysUntilDue(bill.dueDate);
+                        const isOverdue = daysUntil < 0;
+                        const isDueToday = daysUntil === 0;
+                      
+                        return (
+                          <div
+                            key={bill.id}
+                            className={`p-4 rounded-xl border-2 transition-all hover:shadow-md ${isOverdue ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200' :
+                              isDueToday ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200' :
+                                'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200'
+                              }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-medium">{bill.name}</h4>
+                                  {isOverdue && <Badge variant="destructive" className="text-xs rounded-full">Overdue</Badge>}
+                                  {isDueToday && <Badge variant="default" className="text-xs rounded-full bg-yellow-500">Due Today</Badge>}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="size-3" />
+                                    {getCurrencySymbol(bill.currency)}{bill.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="size-3" />
+                                    {new Date(bill.dueDate).toLocaleDateString('en-IN')}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="size-3" />
+                                    {isOverdue ? `${Math.abs(daysUntil)} days overdue` : isDueToday ? 'Due today' : `${daysUntil} days remaining`}
+                                  </span>
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant={isOverdue ? "default" : "secondary"}
+                                onClick={() => handleMarkAsPaid(bill.id)}
+                                className="rounded-full"
+                              >
+                                Mark as Paid
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* BUDGET OVERVIEW */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Budget Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">
+                          Total Budget
+                        </span>
+                        <span className="font-bold">
+                          ₹{categorySpending.reduce((sum, item) => sum + item.spent, 0).toFixed(2)} / ₹
+                          {categorySpending.reduce((sum, item) => sum + item.budget, 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <Progress
+                        value={(categorySpending.reduce((sum, item) => sum + item.spent, 0) / categorySpending.reduce((sum, item) => sum + item.budget, 0)) * 100}
+                        className="h-3"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      {categorySpending.slice(0, 5).map((item) => {
+                        const percentage = (item.spent / item.budget) * 100;
+                        const isOverBudget = percentage > 100;
+
+                        return (
+                          <div key={item.category} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                                <span className="text-sm font-medium">{item.category}</span>
+                                {isOverBudget && <AlertCircle className="w-4 h-4 text-red-500" />}
+                              </div>
+                              <span className="text-sm text-muted-foreground">
+                                ₹{item.spent.toFixed(2)} / ₹{item.budget.toFixed(2)}
+                              </span>
+                            </div>
+                            <Progress value={Math.min(percentage, 100)} className="h-2" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* SPENDING PIE CHART */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader>
+                    <CardTitle>Spending by Category</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={categorySpending}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          dataKey="spent"
+                          label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categorySpending.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+
+
+              {/* RECENT TRANSACTIONS */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[400px] pr-4">
+                    <div className="space-y-3">
+                      {transactions.slice(0, 10).map((transaction) => {
+                        const Icon = categoryIcons[transaction.category] || categoryIcons.Other;
+                        return (
+                          <div
+                            key={transaction.id}
+                            className="flex items-center justify-between p-3 border rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all hover:shadow-md"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{transaction.description}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="outline" className="text-xs rounded-full">{transaction.category}</Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(transaction.date).toLocaleDateString('en-IN')}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-bold ${transaction.type === "credit" ? "text-green-600" : "text-red-600"}`}>
+                                {transaction.type === "credit" ? "+" : "-"}₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* BILLS TAB */}
+            <TabsContent value="bills" className="space-y-6">
+              {/* Bills Manager */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Bills Management</CardTitle>
+                      <CardDescription>Track and manage your recurring bills</CardDescription>
+                    </div>
+                    <Dialog open={isBillDialogOpen} onOpenChange={(open) => {
+                      setIsBillDialogOpen(open);
+                      if (!open) {
+                        resetBillForm();
+                        setEditingBill(null);
+                      }
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button className="rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                          <Plus className="mr-2 size-4" />
+                          Add Bill
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{editingBill ? 'Edit Bill' : 'Add New Bill'}</DialogTitle>
+                          <DialogDescription>Enter the details of your bill</DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleAddBill}>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-name">Bill Name *</Label>
+                              <Input
+                                id="bill-name"
+                                value={billFormData.name}
+                                onChange={(e) => setBillFormData({ ...billFormData, name: e.target.value })}
+                                placeholder="Electric Bill"
+                                className="rounded-lg"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="grid gap-2">
+                                <Label htmlFor="bill-amount">Amount *</Label>
+                                <Input
+                                  id="bill-amount"
+                                  type="number"
+                                  step="0.01"
+                                  value={billFormData.amount}
+                                  onChange={(e) => setBillFormData({ ...billFormData, amount: e.target.value })}
+                                  placeholder="1000.00"
+                                  className="rounded-lg"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor="bill-currency">Currency</Label>
+                                <Select value={billFormData.currency} onValueChange={(value) => setBillFormData({ ...billFormData, currency: value })}>
+                                  <SelectTrigger className="rounded-lg">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CURRENCIES.map(curr => (
+                                      <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-dueDate">Due Date *</Label>
+                              <Input
+                                id="bill-dueDate"
+                                type="date"
+                                value={billFormData.dueDate}
+                                onChange={(e) => setBillFormData({ ...billFormData, dueDate: e.target.value })}
+                                className="rounded-lg"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="grid gap-2">
+                                <Label htmlFor="bill-frequency">Frequency</Label>
+                                <Select value={billFormData.frequency} onValueChange={(value) => setBillFormData({ ...billFormData, frequency: value as Bill['frequency'] })}>
+                                  <SelectTrigger className="rounded-lg">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="one-time">One-time</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                    <SelectItem value="yearly">Yearly</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor="bill-category">Category</Label>
+                                <Select value={billFormData.category} onValueChange={(value) => setBillFormData({ ...billFormData, category: value })}>
+                                  <SelectTrigger className="rounded-lg">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {BILL_CATEGORIES.map(cat => (
+                                      <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="bill-reminder">Reminder (days before)</Label>
+                              <Input
+                                id="bill-reminder"
+                                type="number"
+                                value={billFormData.reminderDays}
+                                onChange={(e) => setBillFormData({ ...billFormData, reminderDays: e.target.value })}
+                                placeholder="3"
+                                className="rounded-lg"
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit" className="rounded-full">{editingBill ? 'Update Bill' : 'Add Bill'}</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {bills.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No bills added yet. Click "Add Bill" to get started.
+                      </div>
+                    ) : (
+                      bills.map((bill) => {
+                        const daysUntil = getDaysUntilDue(bill.dueDate);
+                        const isUpcoming = daysUntil <= bill.reminderDays && daysUntil >= 0;
+                      
+                        return (
+                          <div key={bill.id} className="flex items-center justify-between p-4 border rounded-xl hover:shadow-md transition-all">
+                            <div className="flex items-center gap-4">
+                              <div className={`size-3 rounded-full ${bill.status === 'paid' ? 'bg-green-500' : bill.status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium">{bill.name}</h4>
+                                  <Badge variant="outline" className="capitalize rounded-full">{bill.frequency}</Badge>
+                                  {isUpcoming && (
+                                    <Badge variant="destructive" className="gap-1 rounded-full">
+                                      <AlertCircle className="size-3" />
+                                      Due Soon
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="size-3" />
+                                    {getCurrencySymbol(bill.currency)}{bill.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="size-3" />
+                                    Due: {new Date(bill.dueDate).toLocaleDateString('en-IN')}
+                                  </span>
+                                  <span className="capitalize">{bill.category}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleEditBill(bill)} className="rounded-full">
+                                <Edit className="size-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteBill(bill.id)} className="rounded-full">
+                                <Trash2 className="size-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Currency Summary */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <DollarSign className="size-5" />
+                        Currency Summary
+                      </CardTitle>
+                      <CardDescription>Exchange rates and total bills converted to base currency</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select value={baseCurrency} onValueChange={setBaseCurrency}>
+                        <SelectTrigger className="w-32 rounded-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map((currency) => (
+                            <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="icon" onClick={fetchExchangeRates} disabled={isLoadingRates} className="rounded-full">
+                        <RefreshCw className={`size-4 ${isLoadingRates ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="p-6 bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 rounded-xl shadow-inner">
+                      <p className="text-sm text-muted-foreground mb-1">Total Bills Value</p>
+                      <p className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                        {getCurrencySymbol(baseCurrency)}{currencySummary.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    {currencySummary.breakdown.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-sm">Breakdown by Currency</h4>
+                        {currencySummary.breakdown.map(({ currency, amount, convertedAmount }) => {
+                          const rate = exchangeRates[currency];
+                          return (
+                            <div key={currency} className="flex items-center justify-between p-4 border rounded-xl hover:shadow-md transition-all">
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline" className="rounded-full">{currency}</Badge>
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {getCurrencySymbol(currency)}{amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </p>
+                                  {currency !== baseCurrency && (
+                                    <p className="text-xs text-muted-foreground">
+                                      ≈ {getCurrencySymbol(baseCurrency)}{convertedAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {rate && rate.change24h !== 0 && (
+                                <div className={`flex items-center gap-1 text-sm ${rate.change24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {rate.change24h > 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+                                  {Math.abs(rate.change24h).toFixed(2)}%
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* REWARDS TAB */}
+            <TabsContent value="rewards" className="space-y-6">
+              {/* Points Balance */}
+              <Card className="border-none shadow-lg bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="size-5" />
+                        Rewards Points
+                      </CardTitle>
+                      <CardDescription>Your points balance and tier status</CardDescription>
+                    </div>
+                    <Dialog open={isAddPointsDialogOpen} onOpenChange={setIsAddPointsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                          <Plus className="mr-2 size-4" />
+                          Add Points
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add Reward Points</DialogTitle>
+                          <DialogDescription>Earn points for completing activities</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="points">Points *</Label>
+                            <Input
+                              id="points"
+                              type="number"
+                              value={pointsToAdd}
+                              onChange={(e) => setPointsToAdd(e.target.value)}
+                              placeholder="100"
+                              className="rounded-lg"
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="points-description">Description *</Label>
+                            <Textarea
+                              id="points-description"
+                              value={pointsDescription}
+                              onChange={(e) => setPointsDescription(e.target.value)}
+                              placeholder="Paid electric bill on time"
+                              rows={3}
+                              className="rounded-lg"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleAddPointsManual} className="rounded-full">Add Points</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between p-6 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-lg">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Total Points</p>
+                        <p className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                          {pointsBalance.toLocaleString()}
+                        </p>
+                      </div>
+                      <Star className="size-20 text-yellow-500 drop-shadow-lg" />
+                    </div>
+
+                    <div className="space-y-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Current Tier:</span>
+                          <Badge className={`${tier.color} rounded-full px-3 py-1`}>{tier.name}</Badge>
+                        </div>
+                        {tier.nextTier && (
+                          <span className="text-sm text-muted-foreground">
+                            {tier.nextTier - pointsBalance} points to {tier.nextTier === 5000 ? 'Diamond' : tier.nextTier === 2500 ? 'Gold' : 'Silver'}
+                          </span>
+                        )}
+                      </div>
+                      <Progress value={tier.progress} className="h-3" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Available Rewards */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gift className="size-5" />
+                    Available Rewards
+                  </CardTitle>
+                  <CardDescription>Redeem your points for exciting rewards</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {rewards.map((reward) => {
+                      const canRedeem = pointsBalance >= reward.pointsRequired;
+                    
+                      return (
+                        <div
+                          key={reward.id}
+                          className={`p-5 rounded-xl transition-all hover:shadow-lg ${canRedeem
+                            ? 'border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 hover:-translate-y-1'
+                            : 'border border-gray-200 bg-gray-50'
+                            }`}
+                        >
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex items-start justify-between mb-2">
+                                <h4 className="font-semibold">{reward.name}</h4>
+                                <Badge variant="secondary" className="text-xs rounded-full">{reward.pointsRequired} pts</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{reward.description}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              className={`w-full rounded-full ${canRedeem ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700' : ''}`}
+                              disabled={!canRedeem}
+                              onClick={() => handleRedeemReward(reward.id)}
+                            >
+                              {canRedeem ? '🎁 Redeem Now' : '🔒 Not Enough Points'}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="size-5" />
+                    Recent Activity
+                  </CardTitle>
+                  <CardDescription>Your latest points transactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {rewardTransactions.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">No transactions yet</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {rewardTransactions.slice(0, 8).map((transaction) => (
+                        <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-xl hover:shadow-md transition-all">
+                          <div>
+                            <p className="font-medium text-sm">{transaction.description}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(transaction.date).toLocaleDateString('en-IN')}
+                            </p>
+                          </div>
+                          <span className={`font-bold text-lg ${transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'}`}>
+                            {transaction.type === 'earned' ? '+' : '-'}{transaction.points}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* NEW: GOALS TAB */}
+            <TabsContent value="goals" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">Financial Goals</h2>
+                  <p className="text-muted-foreground">
+                    Set and track your savings goals
+                  </p>
+                </div>
+                <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                      <Plus className="mr-2 size-4" />
+                      Add Goal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Goal</DialogTitle>
+                      <DialogDescription>Set a new financial goal to track</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddGoal}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="goal-name">Goal Name *</Label>
+                          <Input
+                            id="goal-name"
+                            value={goalFormData.name}
+                            onChange={(e) => setGoalFormData({ ...goalFormData, name: e.target.value })}
+                            placeholder="Emergency Fund"
+                            className="rounded-lg"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="goal-target">Target Amount *</Label>
+                            <Input
+                              id="goal-target"
+                              type="number"
+                              value={goalFormData.targetAmount}
+                              onChange={(e) => setGoalFormData({ ...goalFormData, targetAmount: e.target.value })}
+                              placeholder="100000"
+                              className="rounded-lg"
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="goal-current">Current Amount</Label>
+                            <Input
+                              id="goal-current"
+                              type="number"
+                              value={goalFormData.currentAmount}
+                              onChange={(e) => setGoalFormData({ ...goalFormData, currentAmount: e.target.value })}
+                              placeholder="0"
+                              className="rounded-lg"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="goal-deadline">Target Date *</Label>
+                          <Input
+                            id="goal-deadline"
+                            type="date"
+                            value={goalFormData.deadline}
+                            onChange={(e) => setGoalFormData({ ...goalFormData, deadline: e.target.value })}
+                            className="rounded-lg"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="goal-category">Category</Label>
+                          <Select value={goalFormData.category} onValueChange={(value) => setGoalFormData({ ...goalFormData, category: value })}>
+                            <SelectTrigger className="rounded-lg">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="savings">Savings</SelectItem>
+                              <SelectItem value="travel">Travel</SelectItem>
+                              <SelectItem value="shopping">Shopping</SelectItem>
+                              <SelectItem value="education">Education</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" className="rounded-full">Add Goal</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Goals Grid */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {goals.map((goal) => {
+                  const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                  const daysLeft = Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  const isCompleted = progress >= 100;
+                
+                  return (
+                    <Card
+                      key={goal.id}
+                      className={`border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 ${isCompleted ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 'bg-gradient-to-br from-blue-50 to-purple-50'
+                        }`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-3 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                                }`}>
+                                {goal.icon === 'piggy-bank' && <PiggyBank className="size-6 text-white" />}
+                                {goal.icon === 'plane' && <Plane className="size-6 text-white" />}
+                                {goal.icon === 'smartphone' && <Smartphone className="size-6 text-white" />}
+                                {goal.icon === 'target' && <Target className="size-6 text-white" />}
+                              </div>
+                              <div>
+                                <h3 className="font-bold">{goal.name}</h3>
+                                <p className="text-xs text-muted-foreground capitalize">{goal.category}</p>
+                              </div>
+                            </div>
+                            {isCompleted && (
+                              <Badge className="bg-green-500 rounded-full">
+                                <CheckCircle className="size-3 mr-1" />
+                                Done
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="font-bold">
+                                ₹{goal.currentAmount.toLocaleString()} / ₹{goal.targetAmount.toLocaleString()}
+                              </span>
+                            </div>
+                            <Progress value={Math.min(progress, 100)} className="h-3" />
+                            <p className="text-xs text-center text-muted-foreground">
+                              {progress.toFixed(1)}% Complete
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t">
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Deadline: </span>
+                              <span className="font-medium">
+                                {new Date(goal.deadline).toLocaleDateString('en-IN')}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="rounded-full">
+                              {daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}
+                            </Badge>
+                          </div>
+
+                          {!isCompleted && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full rounded-full"
+                              onClick={() => {
+                                const amountToAdd = prompt('Enter amount to add:');
+                                if (amountToAdd) {
+                                  handleUpdateGoalProgress(goal.id, parseFloat(amountToAdd));
+                                  toast.success('Goal updated!', { icon: '🎯' });
+                                }
+                              }}
+                            >
+                              <Plus className="size-4 mr-2" />
+                              Add Progress
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {goals.length === 0 && (
+                <Card className="border-none shadow-md">
+                  <CardContent className="py-12 text-center">
+                    <Target className="size-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No goals yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start by creating your first financial goal
+                    </p>
+                    <Button
+                      onClick={() => setIsGoalDialogOpen(true)}
+                      className="rounded-full"
+                    >
+                      <Plus className="size-4 mr-2" />
+                      Create Your First Goal
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Floating Quick Action Button */}
+          <div className="fixed bottom-8 right-8 z-50">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="lg"
+                  className="rounded-full h-16 w-16 shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-110 transition-all"
+                >
+                  <Zap className="size-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsBillDialogOpen(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Add Bill
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Add Budget
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsGoalDialogOpen(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Add Goal
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsAddPointsDialogOpen(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Add Points
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <Toaster />
+
+        <style jsx global>{`
+        @keyframes confetti {
+          0% {
+            transform: translateY(-10px) rotateZ(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotateZ(720deg);
+            opacity: 0;
+          }
+        }
+        
+        .animate-confetti {
+          animation: confetti 5s ease-in forwards;
+        }
+      `}</style>
+      </div>
+    );
+  }
+
+
+
+
+  // ----- UTILITY FUNCTION -----
+  function getCategoryColor(category) {
+    const colors = {
+      Groceries: "#3b82f6",
+      Housing: "#ef4444",
+      Transportation: "#f59e0b",
+      "Dining Out": "#10b981",
+      Healthcare: "#ec4899",
+      Entertainment: "#8b5cf6",
+      Travel: "#06b6d4",
+      Other: "#6b7280",
+    };
+    return colors[category] || "#6b7280";
+  }
+
+
+
+
+
+
+
